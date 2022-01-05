@@ -11,9 +11,10 @@ class FamMediaGridItem extends LitElement {
     
     css`
     :host {
-      height: calc(auto - 2px);
+      height: auto;
+      width: auto;
       aspect-ratio: 1/1;
-      background-color: red;
+      /* background-color: red; */
     }
 
     .square {
@@ -21,7 +22,13 @@ class FamMediaGridItem extends LitElement {
       width: auto;
       height: 100%;
       object-fit: cover;
+      transition: all 0.3s;
     } 
+
+    .square:hover {
+      transform: scale(1.1);
+      
+    }
   `];
 
   static properties = {
@@ -44,12 +51,13 @@ class FamMediaGridItem extends LitElement {
   // }
 
   render() {
+    let media;
     if(this.type == "image") {
-      return html`
+      media =  html`
         <img id="target" class="square" src="${this.src}">
       `;
     } else if(this.type == "video") {
-      return html`
+      media =  html`
         <video id="target" class="square" preload="metadata">
           <source src="${this.src}#t=1.0" type="video/mp4">
         </video>
@@ -57,10 +65,16 @@ class FamMediaGridItem extends LitElement {
       `;
     } else {
       console.error("INVALID TYPE: " + this.src);
-      return html`
+      media =  html`
         <object id="target" width="100%" height="100%" class="square" data="${this.src}"></object>
         `;
     }
+
+    return html`
+      <a href="${this.src}">
+        ${media}
+      </a>
+    `;
 
     
   }
