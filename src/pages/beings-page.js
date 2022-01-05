@@ -6,7 +6,7 @@ class BeingsPage extends LitElement {
 
 
     static properties = {
-        location: {type: Object, reflect: true}
+        location: {type: Object}
     }
 
     render() {
@@ -14,7 +14,7 @@ class BeingsPage extends LitElement {
         return html`
         
             <h1>Page for Beings</h1>
-            <p></p>
+            <p>${this.location.params.id}</p>
 
             
         `;

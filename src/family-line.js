@@ -16,7 +16,7 @@ class FamilyLine extends LitElement {
         <nav>
             <a href="/">Home</a>
             <a href="/account">Account</a>
-            <a href="/beings">Beings</a>
+            <a href="/beings/147">Beings</a>
         </nav>
         <!-- Routed Page -->
         <slot></slot>

@@ -6,7 +6,7 @@ class AccountPage extends LitElement {
 
 
     static properties = {
-        location: {type: Object, reflect: true}
+        location: {type: Object}
     }
 
     render() {
