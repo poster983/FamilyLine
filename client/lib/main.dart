@@ -3,6 +3,8 @@ import 'package:client/widgets/AppScaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'AppState.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -59,7 +61,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-
+  final controller = Get.put(AppState());
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
