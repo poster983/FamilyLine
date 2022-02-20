@@ -2,18 +2,22 @@
   "name": "server",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www.js"
   },
   "dependencies": {
     "@smcloudstore/generic-s3": "^0.2.0",
     "cookie-parser": "~1.4.4",
-    "crypto-js": "^4.1.1",
     "debug": "~2.6.9",
     "dotenv": "^16.0.0",
     "express": "~4.16.1",
-    "express-http-proxy": "^1.6.3",
+    "imagemin": "^8.0.1",
+    "imagemin-webp": "^7.0.0",
     "morgan": "~1.9.1",
-    "smcloudstore": "^0.2.1"
+    "multer": "^1.4.4",
+    "smcloudstore": "^0.2.1",
+    "uuid": "^8.3.2",
+    "webp-converter": "^2.3.3"
   }
 }
