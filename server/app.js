@@ -1,8 +1,16 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-require('dotenv').config()
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+// import dotenv from 'dotenv';
+// dotenv.config()
+import './env.js'
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 var app = express();
 
@@ -11,13 +19,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-
-app.use('/apiv1', require('./routes/apiv1/apiv1'));
-app.use('/dev', require('./routes/dev'));
-
-
-app.use('/', require('./routes/index'));
+import apiRoute from './routes/apiv1/apiv1.js';
+import devRoute from './routes/dev.js';
+import rootRoute from './routes/index.js';
+app.use('/apiv1', apiRoute);
+app.use('/dev', devRoute);
+app.use('/', rootRoute);
 
 //404 handler
 app.use(function(req, res, next) {
@@ -53,11 +60,11 @@ app.use(function(req, res, next) {
 
 //     //console.log(err)
 //     // render the error page
-  
+
 //     res.set("errormessage", encodeURIComponent(err.message));
 //     res.status(err.status);
 //     res.render("error");
-  
+
 
 // });
 

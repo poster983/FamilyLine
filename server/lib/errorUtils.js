@@ -1,5 +1,5 @@
-exports.error = (message, status) =>{
+export const error = (message, status) =>{
     let e = new Error(message)
     e.status = status;
     return e;
-}
+};

@@ -1,7 +1,7 @@
-var express = require('express');
+import express from 'express';
 var router = express.Router();
-
-router.use('/media', require('./mediaAPI'));
+import mediaAPI from "./mediaAPI.js"
+router.use('/media', mediaAPI);
 
 //error
 router.use(function(err, req, res, next) {
@@ -42,4 +42,4 @@ router.use(function(err, req, res, next) {
 
 });
 
-module.exports = router;
+export default router;

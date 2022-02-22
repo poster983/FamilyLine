@@ -1,35 +1,24 @@
-var express = require('express');
-var router = express.Router();
-const os = require('os');
-const error = require("../../lib/errorUtils").error
-const fsP = require('fs').promises;
-const { v4: uuidv4 } = require('uuid');
+import { Router } from 'express';
+var router = Router();
+import { tmpdir } from 'os';
+import { error } from "../../lib/errorUtils.js";
+import { promises as fsP } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import storage from "../../s3.js"
 
-
-const multer  = require('multer')
+import multer from 'multer';
 const upload = multer({ 
-  dest: os.tmpdir()+'/familyline_useruploads', 
+  dest: tmpdir()+'/familyline_useruploads', 
   limits: { fileSize: 2000000000 }
 })
 
-const SMCloudStore = require('smcloudstore')
 
-const mu = require("../../lib/mediaUtils.js");
+
+import { checkFileType, mediaTypes, preprocess } from "../../lib/mediaUtils.js";
 
 // Complete with the connection options for GenericS3
+console.log(process.env.S3_ENDPOINT)
 
-
-
-
-const connection = {
-    endPoint: process.env.S3_ENDPOINT,
-    accessKey: process.env.S3_KEY_ID,
-    secretKey: process.env.S3_APPLICATION_KEY,
-    region: process.env.S3_REGION,
-    pathStyle: (process.env.S3_PATH_STYLE.toLowerCase()==='true')?true:false
-}
-// Return an instance of the GenericS3Provider class
-const storage = SMCloudStore.Create('generic-s3', connection)
 
 /**
  * @api {post} /apiv1/media/:*
@@ -44,7 +33,7 @@ const storage = SMCloudStore.Create('generic-s3', connection)
     if(req.file == null) {
       return next(error("Multipart file upload required", 400))
     }
-    const info = mu.checkFileType(req.file)
+    const info = checkFileType(req.file)
     if(info==null) {
       //delete that file
       try {
@@ -57,8 +46,9 @@ const storage = SMCloudStore.Create('generic-s3', connection)
     }
     const photoID = uuidv4();
     console.log(info)
-    if(info === mu.mediaTypes.Image) { // convert image
-      await mu.preprocess.image(req.file, {name: photoID})
+    if(info === mediaTypes.Image) { // convert image
+      const files =  await preprocess.image(req.file, {name: photoID})
+      
     }
 
 
@@ -133,4 +123,4 @@ router.get("/*", async (req,res,next) => { // should ensure the user has suffici
 
 
 
-module.exports = router;
+export default router;
