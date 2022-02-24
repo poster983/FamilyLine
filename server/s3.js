@@ -8,4 +8,4 @@ const connection = {
     pathStyle: (process.env.S3_PATH_STYLE.toLowerCase()==='true')?true:false
 }
 // Return an instance of the GenericS3Provider class
-export default storage = SMCloudStore.Create('generic-s3', connection)
+export default  SMCloudStore.Create('generic-s3', connection)

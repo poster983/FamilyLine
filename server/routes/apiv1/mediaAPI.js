@@ -14,7 +14,7 @@ const upload = multer({
 
 
 
-import { checkFileType, mediaTypes, preprocess } from "../../lib/mediaUtils.js";
+import { checkFileType, mediaTypes, preprocess, uploadImage} from "../../lib/mediaUtils.js";
 
 // Complete with the connection options for GenericS3
 console.log(process.env.S3_ENDPOINT)
@@ -48,7 +48,10 @@ console.log(process.env.S3_ENDPOINT)
     console.log(info)
     if(info === mediaTypes.Image) { // convert image
       const files =  await preprocess.image(req.file, {name: photoID})
-      
+      res.status(201);
+      res.json(files)
+    } else {
+      return next(error("File type not implemented", 501))
     }
 
 
