@@ -26,30 +26,7 @@ import { encode } from "blurhash";
 // webpSetup();
 
 
-/**
- * Database Media schema
- * @typedef {Object} DBMedia
- * @property {String} id - media id
- * @property {String} groupID - The group that this media belongs to. 
- * @property {String} type - can be 'video', 'audio', 'image', document'
- * @property {Date} uploaded - Upload date
- * @property {Date} lastModified - Last modified date
- * @property {Date} sortDate - Day to sort tis against the other photos in th UT (day photo was taken for instance)
- * @property {Object|null} processing - can be null if the object does not need processing
- * @property {Number} processing.progress - 0 to 1
- * @property {Date|null} processing.finished
- * @property {Date|null} processing.started 
- * @property {Object} metadata - TBD
- * @property {String} notes - user defined notes.
- * @property {String} blurhash - Blurhash string to show the user before the actual picture loads
- * @property {Object} files - Holds info about the different types of files that make up this Media
- * @property {Object|null} files.original - The original and unmodified file for archival | if null then we didnt save it
- * @property {Number} files.original.size - size in kb
- * @property {String} files.original.name - the original file name
- * @property {String} files.original.mimetype - the original mimetype 
- * @property {Object|null} files.compressed - The compressed version.
- * @property {Number} files.compressed.size - size in kb
- */
+
 
 
 
