@@ -6,9 +6,14 @@ import {
 } from 'fs';
 import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
+import sharp from "sharp";
 import storage from "../s3.js"
-
+import { error } from "./errorUtils.js";
+import { schemas, queue } from '../mongoose.js';
 import { encode } from "blurhash";
+import { v4 as uuidv4 } from 'uuid';
+import mongoose from "mongoose";
+import util from "util"
 
 //const imagemin = require("imagemin");
 //const imageminWebp = require("imagemin-webp");
@@ -49,7 +54,7 @@ export function checkFileType(file) {
   const allowedAudioTypes = /mp3|ogg|opus|wav/ // convert to ogg
   const allowedDocumentTypes = /pdf|epub/
   let type = null;
-  console.log(file)
+  //console.log(file)
   if (allowedImageTypes.test(extname(file.originalname).toLowerCase()) && allowedImageTypes.test(file.mimetype)) { // image
     type = mediaTypes.Image;
   } else if (allowedVideoTypes.test(extname(file.originalname).toLowerCase()) && allowedVideoTypes.test(file.mimetype)) { // Video
@@ -169,6 +174,39 @@ export async function uploadImage(fileinfo, imageID) {
 }
 
 
+// async function openFile(path) {
+//   let file;
+//   try {
+//     file = await fsP.readFile(path);
+//   } catch (e) {
+//     console.error(e)
+//     //delete original file 
+//     try {
+//       fsP.unlink(newFileName);
+//     } catch (e) {
+//       console.error(e)
+//       return new Error("Could not delete uploaded file")
+//     }
+//     return e;
+//   }
+// }
+
+
+export function encodeImageToBlurhash (pathOrBuffer) {
+  return new Promise((resolve, reject) => {
+    sharp(pathOrBuffer)
+      .raw()
+      .ensureAlpha()
+      .resize(32, 32, { fit: "inside" })
+      .toBuffer((err, buffer, { width, height }) => {
+        if (err) return reject(err);
+        resolve(encode(new Uint8ClampedArray(buffer), width, height, 4, 4));
+      });
+  });
+}
+
+
+
 
 /**
  * 
@@ -180,15 +218,81 @@ export async function uploadImage(fileinfo, imageID) {
  * @param {String} groupID 
  */
 export async function uploadObject(fileinfo, groupID) {
+  console.log("PENIS")
+  //determine if object needs to be queued for processing (images, video, audio, docs)
+  const filetype = checkFileType(fileinfo);
+  if(!filetype) {
+    throw error()
+  }
 
-  //determine if object needs to be queued for processing (images, video, audio, not docs)
+  let file;
+  //open file
+  try {
+    file = await fsP.readFile(fileinfo.path);
+  } catch (e) {
+    console.error(e)
+    throw e;
+  }
 
   //generate blurhash
+  let blurhash = null;
+  try {
+    blurhash = await encodeImageToBlurhash(file)
+    console.log(blurhash)
+  } catch(e) {
+    throw error(e, 500)
+  }
+  
 
   //create record of object in DB.  (uuid, groupID, type[image,video,audio,doc], uploadDate, modifiedDate, processing{},  metadata{}, notes:Str, blurhash, paths: {original: })
 
-  //if queue then upload object to DB 
+  let dbobj = new schemas.DBMedia({
+    groupID: mongoose.Types.ObjectId(),
+    type: filetype.description,
+    encoding: {
+      progress: 0
+    },
+    metadata: {
+      filename: fileinfo.originalname
+    },
+    blurhash: blurhash,
+  })
 
+
+  
+  const mediaID = dbobj._id.valueOf();
+  const processingPath = `usermedia/original/${mediaID}`;
+  //upload document to s3 
+  try {
+    await storage.putObject(process.env.S3_BUCKET, processingPath, file);
+  } catch(e) {
+    throw error(e,500);
+  }
+  dbobj.encoding.link = processingPath;
+  
+  
+  console.log(dbobj)
+  try {
+    await dbobj.validate();
+  } catch(e) {
+    throw error(e, 500)
+  }
+  
+  try {
+   await dbobj.save();
+  } catch(e) {
+    throw error(e, 500);
+  }
+  
+  try {
+    await util.promisify(queue.encoder.add({mediaID: dbobj._id, processingPath: processingPath}));
+  } catch(e) {
+    throw error(e, 500);
+  }
+  
+
+  return {status: "processing"};
+  //if queue then upload object to DB 
 
 }
 

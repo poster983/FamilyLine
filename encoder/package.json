@@ -2,7 +2,7 @@
   "name": "encoder",
   "version": "1.0.0",
   "description": "An encoding micro service for FamilyLine",
-  "main": "index.js",
+  "main": "encoder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

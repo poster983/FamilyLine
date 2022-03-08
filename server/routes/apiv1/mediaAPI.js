@@ -3,7 +3,7 @@ var router = Router();
 import { tmpdir } from 'os';
 import { error } from "../../lib/errorUtils.js";
 import { promises as fsP } from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+
 import storage from "../../s3.js"
 
 import multer from 'multer';
@@ -14,7 +14,7 @@ const upload = multer({
 
 
 
-import { checkFileType, mediaTypes, preprocess, uploadImage} from "../../lib/mediaUtils.js";
+import { uploadObject, checkFileType, mediaTypes, preprocess, uploadImage} from "../../lib/mediaUtils.js";
 
 // Complete with the connection options for GenericS3
 console.log(process.env.S3_ENDPOINT)
@@ -33,27 +33,37 @@ console.log(process.env.S3_ENDPOINT)
     if(req.file == null) {
       return next(error("Multipart file upload required", 400))
     }
-    const info = checkFileType(req.file)
-    if(info==null) {
-      //delete that file
-      try {
-        fsP.unlink(req.file.path);
-      } catch(e) {
-        console.error(e)
-      }
-      
-      return next(error("This filetype is not supported.", 400))
-    }
-    const photoID = uuidv4();
-    console.log(info)
-    if(info === mediaTypes.Image) { // convert image
-      const files =  await preprocess.image(req.file, {name: photoID})
+    // const info = checkFileType(req.file)
+    // if(info==null) {
+    //   //delete that file
+    //   try {
+    //     fsP.unlink(req.file.path);
+    //   } catch(e) {
+    //     console.error(e)
+    //   }
+    //   return next(error("This filetype is not supported.", 400))
+    // }
+    // const photoID = uuidv4();
+    //console.log(info)
+    try { 
+      const status = await uploadObject(req.file, "peepeepoopoogroupid")
+      fsP.unlink(req.file.path);
       res.status(201);
-      res.json(files)
-    } else {
-      return next(error("File type not implemented", 501))
+      res.json(status)
+    } catch(e) {
+      fsP.unlink(req.file.path);
+      return next(e)
     }
+    
+    // if(info === mediaTypes.Image) { // convert image
+    //   // const files =  await preprocess.image(req.file, {name: photoID})
+    //   // 
+    //   // res.json(files)
+    // } else {
+    //   return next(error("File type not implemented", 501))
+    // }
 
+    
 
 
  });
