@@ -1,7 +1,9 @@
 import express from 'express';
 var router = express.Router();
 import mediaAPI from "./mediaAPI.js"
+import authAPI from "./authAPI.js"
 router.use('/media', mediaAPI);
+router.use('/auth', authAPI)
 
 //error
 router.use(function(err, req, res, next) {

@@ -106,3 +106,7 @@ dist
 localS3/
 
 .env.prod
+
+*.key
+
+*.key.pub

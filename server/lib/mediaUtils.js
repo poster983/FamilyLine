@@ -210,7 +210,7 @@ export async function uploadObject(fileinfo, groupID) {
 
   //create record of object in DB.  (uuid, groupID, type[image,video,audio,doc], uploadDate, modifiedDate, processing{},  metadata{}, notes:Str, blurhash, paths: {original: })
 
-  let dbobj = new schemas.DBMedia({
+  let dbobj = new schemas.Media({
     groupID: groupID,
     type: filetype.description,
     encoding: {

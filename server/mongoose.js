@@ -1,12 +1,12 @@
 
 import mongoose from "mongoose";
-
 import mongoDbQueue from "mongodb-queue-up"
-
 export let connection = await mongoose.connect(process.env.MONGODB_CONNECTION_STRING); // TODO: a
 import util from "util"
-
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
+const jwtSign = util.promisify(jwt.sign);
+import { v4 as uuidv4 } from 'uuid';
 
 
 //MARK: Setup Queues
@@ -104,7 +104,7 @@ const DBMedia = new mongoose.Schema({
 
     //[{type: {type: String, required: true}, size: Number, mimetype: String}]
 })
-schemas.DBMedia = mongoose.model('Media', DBMedia);
+schemas.Media = mongoose.model('Media', DBMedia);
 
 
 
@@ -147,6 +147,7 @@ schemas.DBMedia = mongoose.model('Media', DBMedia);
 DBUser.pre(
     'save',
     async function(next) {
+    if (!this.isModified('password')) return next();
       //const user = this;
       const hash = await bcrypt.hash(this.password, 10);
   
@@ -154,16 +155,95 @@ DBUser.pre(
       next();
     }
   );
-
 //Check hash with passowrd in db 
-UserSchema.methods.validatePassword = async function(password) {
+DBUser.methods.validatePassword = async function(password) {
     const user = this;
     const compare = await bcrypt.compare(password, user.password);
 
     return compare;
 }
-  
-schemas.DBUser = mongoose.model('User', DBUser);
+schemas.User = mongoose.model('User', DBUser);
+
+
+//MARK: Long Lived  Refresh Bearer Tokens
+const expireSeconds = process.env.AUTH_REFRESH_TOKEN_TIMEOUT; // 1 hour 
+/**
+ * Long lived refresh bearer token to be exchanged for access tokens
+ * @typedef {Object} DBRefreshToken
+ * @property {ObjectId} _id - Token Primary Key (unused)
+ * @property {ObjectId} userID - The user this token authenticates 
+//* @property {Date} expire_at - The time this token will no longer work and gets deleted from the db
+ * @property {Date} created - Date token created
+ * @property {String} [device=unknown] - String that identifies the device that this request came from
+ * @property {String} token - The primary key and hashed bearer token
+ */
+const DBRefreshToken = new mongoose.Schema({
+    // expire_at: {type: Date, default: Date.now, }, // 2hours = 7200
+    userID: {type: mongoose.Schema.ObjectId, required: true},
+    created: {type: Date, default: Date.now},
+    lastRefreshed: {type: Date, default: Date.now, expires: expireSeconds},
+    device: {type: String, default: "UNKNOWN"},
+    token: {type: String, unique: true, required: true}
+    //[{type: {type: String, required: true}, size: Number, mimetype: String}]
+})
+
+
+/**
+ * creates a new token to be saved in the db
+ * @returns {String} New Bearer Token
+ */
+ DBRefreshToken.methods.generateToken = async function() {
+    const expireEPH = Date.now()
+    //this.expire_at = expireEPH;
+    this.lastRefreshed = expireEPH;
+    this.token = jwt.sign({
+        userID: this.userID.valueOf(),
+        generationID: uuidv4(),
+        type: 'refresh'
+    }, process.env.AUTH_JWT_PRIVATE_KEY, { expiresIn: expireSeconds, jwtid: this._id.valueOf()});
+    return this.token;
+}
+
+//Hashes the token before saving 
+DBRefreshToken.pre(
+    'save',
+    async function(next) {
+      if (!this.isModified('token')) return next();
+      //const user = this;
+      const hash = await bcrypt.hash(this.token, 10);
+      this.password = hash;
+      next();
+    }
+);
+
+//Check hash with token in db 
+DBRefreshToken.methods.validateToken = async function(token) {
+    const compare = await bcrypt.compare(token, this.token);
+    return compare;
+}
+schemas.RefreshToken = mongoose.model('refreshtokens', DBRefreshToken);
+
+const bt = new schemas.RefreshToken({
+    userID: mongoose.Types.ObjectId(),
+    device: "testing"
+})
+const bt2 = new schemas.RefreshToken({
+    userID: mongoose.Types.ObjectId(),
+    device: "testing"
+})
+console.log(bt)
+bt.generateToken()
+bt.save();
+
+bt2.generateToken()
+bt2.save();
+
+setTimeout(async () => {
+    const fbt = await schemas.RefreshToken.findById(bt._id)
+    fbt.generateToken()
+    fbt.save();
+}, 1000*8)
+
 // const pp = new schemas.DBMedia({
 //     groupID: mongoose.Types.ObjectId(),
 //     type: "image",
