@@ -13,7 +13,7 @@ import { schemas, queue } from '../mongoose.js';
 import { encode } from "blurhash";
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from "mongoose";
-import util from "util"
+
 
 //const imagemin = require("imagemin");
 //const imageminWebp = require("imagemin-webp");
@@ -156,42 +156,6 @@ preprocess.image = async (fileinfo, options) => {
 }
 
 
-/**
- * Queue an image for 
- * @param {Object} options
- * @param {Object} options.fileinfo - From muller
- * @param {String} options.fileinfo.paths
- * @param {String} options.fileinfo.mimetype
- * @param {String} options.fileinfo.destination - the base path, no file name
- * @param {String} options.imageID
- * @param {String} options.groupID
- * @async
- */
-export async function uploadImage(fileinfo, imageID) {
-  let uploads = [];
-  //if(fileinfo.paths.original)
-  //uploads.push(storage.putObject(process.env.S3_BUCKET, )) 
-}
-
-
-// async function openFile(path) {
-//   let file;
-//   try {
-//     file = await fsP.readFile(path);
-//   } catch (e) {
-//     console.error(e)
-//     //delete original file 
-//     try {
-//       fsP.unlink(newFileName);
-//     } catch (e) {
-//       console.error(e)
-//       return new Error("Could not delete uploaded file")
-//     }
-//     return e;
-//   }
-// }
-
-
 export function encodeImageToBlurhash (pathOrBuffer) {
   return new Promise((resolve, reject) => {
     sharp(pathOrBuffer)
@@ -215,7 +179,7 @@ export function encodeImageToBlurhash (pathOrBuffer) {
  * @param {String} fileinfo.originalname
  * @param {String} fileinfo.path
  * @param {String} fileinfo.mimetype
- * @param {String} groupID 
+ * @param {ObjectID} groupID 
  */
 export async function uploadObject(fileinfo, groupID) {
   console.log("PENIS")
@@ -247,7 +211,7 @@ export async function uploadObject(fileinfo, groupID) {
   //create record of object in DB.  (uuid, groupID, type[image,video,audio,doc], uploadDate, modifiedDate, processing{},  metadata{}, notes:Str, blurhash, paths: {original: })
 
   let dbobj = new schemas.DBMedia({
-    groupID: mongoose.Types.ObjectId(),
+    groupID: groupID,
     type: filetype.description,
     encoding: {
       progress: 0
@@ -261,10 +225,12 @@ export async function uploadObject(fileinfo, groupID) {
 
   
   const mediaID = dbobj._id.valueOf();
-  const processingPath = `usermedia/original/${mediaID}`;
+  const processingPath = `groups/${groupID.valueOf()}/usermedia/original/${mediaID}`;
   //upload document to s3 
   try {
-    await storage.putObject(process.env.S3_BUCKET, processingPath, file);
+    await storage.putObject(process.env.S3_BUCKET, processingPath, file, {metadata: {
+      'Content-Type': fileinfo.mimetype
+    }});
   } catch(e) {
     throw error(e,500);
   }
@@ -284,8 +250,18 @@ export async function uploadObject(fileinfo, groupID) {
     throw error(e, 500);
   }
   
+
+  
   try {
-    await util.promisify(queue.encoder.add({mediaID: dbobj._id, processingPath: processingPath}));
+    await queue.encoder.add({mediaID: dbobj._id, processingPath: processingPath});
+    // await new Promise((resolve, reject) => {
+    //   queue.encoder.raw.add({mediaID: dbobj._id, processingPath: processingPath}, (e, i) => {
+    //     if(e) {
+    //       return reject(e);
+    //     }
+    //     resolve(i)
+    //   })
+    // })
   } catch(e) {
     throw error(e, 500);
   }

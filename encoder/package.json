@@ -7,5 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joseph Hassell (joseph@hassell.dev)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.30.2",
+    "mongodb-queue-up": "^5.0.1",
+    "mongoose": "^6.2.4",
+    "dotenv": "^16.0.0"
+  }
 }

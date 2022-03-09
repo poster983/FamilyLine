@@ -4,32 +4,25 @@ import mongoose from "mongoose";
 import mongoDbQueue from "mongodb-queue-up"
 
 export let connection = await mongoose.connect(process.env.MONGODB_CONNECTION_STRING); // TODO: a
+import util from "util"
 
+import bcrypt from "bcrypt"
 
-
-
-// export async function connect() {
-//     await 
-// }
 
 //MARK: Setup Queues
 
 export let queue = {}
+queue.encoder = {}
+queue.encoder.raw = mongoDbQueue(mongoose.connection.db, 'encoder-queue')
+queue.encoder.add = util.promisify(queue.encoder.raw.add.bind(queue.encoder.raw))
+queue.encoder.ack = util.promisify(queue.encoder.raw.ack.bind(queue.encoder.raw))
+// queue.encoder.raw.add({
+//     mediaID: new ObjectId("6227c763840e546cd5763ad7"),
+//     processingPath: 'usermedia/original/6227c763840e546cd5763ad7'
+//   }, (err, val) => {console.log(val);})
 
-queue.encoder =  mongoDbQueue(mongoose.connection.db, 'encoder-queue')
 
-// queue.encoder.add("hello there", (err, id) => {
-//             console.log(err, id)
-//         })
-
-
-// 
-
-// setTimeout(()=> {
-    
-//     
-// },1000)
-
+// console.log(instanceof mongoose.Types.ObjectId())
 
 
 // const Kitten = mongoose.model('Kitten', new mongoose.Schema({
@@ -45,6 +38,8 @@ queue.encoder =  mongoDbQueue(mongoose.connection.db, 'encoder-queue')
 
 export let schemas = {};
 
+
+// MARK: MEDIA
 /**
  * Database Media schema
  * @typedef {Object} DBMedia
@@ -113,6 +108,8 @@ schemas.DBMedia = mongoose.model('Media', DBMedia);
 
 
 
+// MARK: USER
+
 /**
  * Database User schema
  * @typedef {Object} DBUser
@@ -141,12 +138,31 @@ schemas.DBMedia = mongoose.model('Media', DBMedia);
         required: true,
         match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address'] //TODO: Improve email regex
     },
-    hashedPass: {type: String, required: true},
+    password: {type: String, required: true, },
     joined: {type: Date, default: Date.now}
-    
-
     //[{type: {type: String, required: true}, size: Number, mimetype: String}]
 })
+
+//Hashes the password before saving 
+DBUser.pre(
+    'save',
+    async function(next) {
+      //const user = this;
+      const hash = await bcrypt.hash(this.password, 10);
+  
+      this.password = hash;
+      next();
+    }
+  );
+
+//Check hash with passowrd in db 
+UserSchema.methods.validatePassword = async function(password) {
+    const user = this;
+    const compare = await bcrypt.compare(password, user.password);
+
+    return compare;
+}
+  
 schemas.DBUser = mongoose.model('User', DBUser);
 // const pp = new schemas.DBMedia({
 //     groupID: mongoose.Types.ObjectId(),

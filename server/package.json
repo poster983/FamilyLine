@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "start": "node ./bin/www.js",
-    "start:s3": "minio server ./localS3",
+    "start:s3": "minio server ./localS3 --console-address \":9069\"",
     "start:db": "brew services start mongodb-community"
   },
   "dependencies": {
     "@smcloudstore/generic-s3": "^0.2.0",
+    "bcrypt": "^5.0.1",
     "blurhash": "^1.1.5",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -21,6 +22,8 @@
     "mongoose": "^6.2.4",
     "morgan": "~1.9.1",
     "multer": "^1.4.4",
+    "passport": "^0.5.2",
+    "passport-local": "^1.0.0",
     "sharp": "^0.30.2",
     "smcloudstore": "^0.2.1",
     "uuid": "^8.3.2"

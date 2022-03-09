@@ -5,7 +5,7 @@ import { error } from "../../lib/errorUtils.js";
 import { promises as fsP } from 'fs';
 
 import storage from "../../s3.js"
-
+import mongoose from "mongoose";
 import multer from 'multer';
 const upload = multer({ 
   dest: tmpdir()+'/familyline_useruploads', 
@@ -14,7 +14,7 @@ const upload = multer({
 
 
 
-import { uploadObject, checkFileType, mediaTypes, preprocess, uploadImage} from "../../lib/mediaUtils.js";
+import { uploadObject} from "../../lib/mediaUtils.js";
 
 // Complete with the connection options for GenericS3
 console.log(process.env.S3_ENDPOINT)
@@ -46,7 +46,7 @@ console.log(process.env.S3_ENDPOINT)
     // const photoID = uuidv4();
     //console.log(info)
     try { 
-      const status = await uploadObject(req.file, "peepeepoopoogroupid")
+      const status = await uploadObject(req.file, mongoose.Types.ObjectId("55153a8014829a865bbf700d"))
       fsP.unlink(req.file.path);
       res.status(201);
       res.json(status)
@@ -82,7 +82,7 @@ router.get("/*", async (req,res,next) => { // should ensure the user has suffici
   try {
     //let metaData = await storage.h(process.env.S3_BUCKET, req.params[0])
     console.log(req.params[0])
-    let stream = await storage.getObject(process.env.S3_BUCKET, req.params[0])
+    let stream = await storage.getObject(process.env.S3_BUCKET, "usermedia/"+req.params[0])
     stream.on('error', function error(err) {
         //continue to the next middlewares
         return next(err);
@@ -93,7 +93,7 @@ router.get("/*", async (req,res,next) => { // should ensure the user has suffici
     res.set('Content-Length', stream.headers['content-length']);
     res.set('Last-Modified', stream.headers['last-modified']);
     res.set('ETag', stream.headers['etag']);
-    res.set('Cache-Control', 'public, max-age=604800')
+    res.set('Cache-Control', 'private, max-age=604800')
     stream.pipe(res)
     //res.end()
   } catch(e) {
