@@ -9,10 +9,11 @@ import imageminWebp from 'imagemin-webp';
 import sharp from "sharp";
 import storage from "../s3.js"
 import { error } from "./errorUtils.js";
-import { schemas, queue } from '../mongoose.js';
+import DBMedia from './mongoose/DBMedia.js';
+import {encoder} from './mongoose/DBQueues.js';
 import { encode } from "blurhash";
 import { v4 as uuidv4 } from 'uuid';
-import mongoose from "mongoose";
+
 
 
 //const imagemin = require("imagemin");
@@ -171,6 +172,16 @@ export function encodeImageToBlurhash (pathOrBuffer) {
 
 
 
+export async function findMediaObjects(filter) {
+
+  let query = {
+    
+  }
+
+  //DBMedia.find()
+}
+
+
 
 /**
  * 
@@ -182,7 +193,6 @@ export function encodeImageToBlurhash (pathOrBuffer) {
  * @param {ObjectID} groupID 
  */
 export async function uploadObject(fileinfo, groupID) {
-  console.log("PENIS")
   //determine if object needs to be queued for processing (images, video, audio, docs)
   const filetype = checkFileType(fileinfo);
   if(!filetype) {
@@ -202,7 +212,7 @@ export async function uploadObject(fileinfo, groupID) {
   let blurhash = null;
   try {
     blurhash = await encodeImageToBlurhash(file)
-    console.log(blurhash)
+    //console.log(blurhash)
   } catch(e) {
     throw error(e, 500)
   }
@@ -210,7 +220,7 @@ export async function uploadObject(fileinfo, groupID) {
 
   //create record of object in DB.  (uuid, groupID, type[image,video,audio,doc], uploadDate, modifiedDate, processing{},  metadata{}, notes:Str, blurhash, paths: {original: })
 
-  let dbobj = new schemas.Media({
+  let dbobj = new DBMedia({
     groupID: groupID,
     type: filetype.description,
     encoding: {
@@ -237,7 +247,7 @@ export async function uploadObject(fileinfo, groupID) {
   dbobj.encoding.link = processingPath;
   
   
-  console.log(dbobj)
+  //console.log(dbobj)
   try {
     await dbobj.validate();
   } catch(e) {
@@ -251,9 +261,9 @@ export async function uploadObject(fileinfo, groupID) {
   }
   
 
-  
+  let queueID = null;
   try {
-    await queue.encoder.add({mediaID: dbobj._id, processingPath: processingPath});
+    queueID = await encoder.add({mediaID: dbobj._id, processingPath: processingPath});
     // await new Promise((resolve, reject) => {
     //   queue.encoder.raw.add({mediaID: dbobj._id, processingPath: processingPath}, (e, i) => {
     //     if(e) {
@@ -267,7 +277,7 @@ export async function uploadObject(fileinfo, groupID) {
   }
   
 
-  return {status: "processing"};
+  return {status: "processing", queueID: queueID, mediaID: dbobj._id.valueOf()};
   //if queue then upload object to DB 
 
 }

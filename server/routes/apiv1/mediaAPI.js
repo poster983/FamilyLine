@@ -1,9 +1,10 @@
+
 import { Router } from 'express';
-var router = Router();
+const router = Router({mergeParams: true});
 import { tmpdir } from 'os';
 import { error } from "../../lib/errorUtils.js";
 import { promises as fsP } from 'fs';
-
+import {PaginationParameters} from "mongoose-paginate-v2";
 import storage from "../../s3.js"
 import mongoose from "mongoose";
 import multer from 'multer';
@@ -12,41 +13,43 @@ const upload = multer({
   limits: { fileSize: 2000000000 }
 })
 
-
-
+import DBMedia from '../../lib/mongoose/DBMedia.js';
+import {verifyAccessToken, checkGroup} from "../../lib/authUtils.js"
 import { uploadObject} from "../../lib/mediaUtils.js";
 
 // Complete with the connection options for GenericS3
 console.log(process.env.S3_ENDPOINT)
 
 
+//verify ids middleware
+const verifyIDs = (req,res,next) => {
+  if(req.params.groupID && !mongoose.isValidObjectId(req.params.groupID)) {
+      return next(error("'groupID' is invalid", 400));
+  }
+
+  if(req.params.mediaID && !mongoose.isValidObjectId(req.params.mediaID)) {
+      return next(error("'mediaID' is invalid", 400));
+  }
+  return next();
+}
+
+
 /**
- * @api {post} /apiv1/media/:*
+ * @api {post} /apiv1/group/:groupID/media/
  * @apiName UploadMedia
  * @apiGroup Media
- * @apiParam {String} * - Path to S3 Object.
- * @apiSuccess {String} fullsizeURI
- * @apiSuccess {String} thumbnailURI
+ * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
+ * @apiParam {String} groupID - The id of the group that this media belongs too.
+ * @apiSuccess {String} status - processing
  * @apiVersion 1.0.0
  */
- router.post("/", upload.single('file'), async (req,res,next) => {
+ router.post("/", verifyIDs, verifyAccessToken, checkGroup, upload.single('file'), async (req,res,next) => {
+    //console.log("GroupID", req.params['groupID'])
     if(req.file == null) {
       return next(error("Multipart file upload required", 400))
     }
-    // const info = checkFileType(req.file)
-    // if(info==null) {
-    //   //delete that file
-    //   try {
-    //     fsP.unlink(req.file.path);
-    //   } catch(e) {
-    //     console.error(e)
-    //   }
-    //   return next(error("This filetype is not supported.", 400))
-    // }
-    // const photoID = uuidv4();
-    //console.log(info)
     try { 
-      const status = await uploadObject(req.file, mongoose.Types.ObjectId("55153a8014829a865bbf700d"))
+      const status = await uploadObject(req.file, req.params.groupID)
       fsP.unlink(req.file.path);
       res.status(201);
       res.json(status)
@@ -54,35 +57,112 @@ console.log(process.env.S3_ENDPOINT)
       fsP.unlink(req.file.path);
       return next(e)
     }
-    
-    // if(info === mediaTypes.Image) { // convert image
-    //   // const files =  await preprocess.image(req.file, {name: photoID})
-    //   // 
-    //   // res.json(files)
-    // } else {
-    //   return next(error("File type not implemented", 501))
-    // }
-
-    
-
-
  });
+
+
+/**
+ * @api {get} /apiv1/group/:groupID/media/
+ * @apiName ListAllMedia
+ * @apiGroup Media
+ * @apiDescription Lists all media in order with pagenation
+ * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
+ * @apiQuery {Object} [filter] - Mongodb filter Query (ignores groupID).  
+ * @apiQuery {Object} [sort] - Mongodb Sort Syntax. Pass as a json string
+ * @apiQuery {Number} [page=1] - Page number for pagination
+ * @apiQuery {Number} [limit=10] - Number of records to return on a page.
+ * @apiParam {String} groupID - The id of the group that this media belongs too.
+ * @apiVersion 1.0.0
+ */
+ router.get("/", verifyIDs, verifyAccessToken, checkGroup, async (req,res,next) => {
+  //console.log(req.query)
+  try {
+    if(req.query.filter) {
+      req.query.filter = JSON.parse(req.query.filter)
+      req.query.filter.groupID = req.params.groupID;
+    } else {
+      req.query.filter = {}
+    }
+    let opts = new PaginationParameters(req).get()
+    opts[0] = req.query.filter;
+    //console.log(opts)
+    let doc = await DBMedia.paginate(...opts)
+    if(!doc) {
+      return next(error("Media object not found",404));
+    }
+    return res.json(doc);
+  } catch(e) {
+    return next(error(e,500));
+  }
+  
+});
 
 
 
 /**
- * @api {get} /apiv1/media/:*
- * @apiName GetObject
+ * @api {get} /apiv1/group/:groupID/media/:mediaID/
+ * @apiName GetMediaData
  * @apiGroup Media
- * @apiParam {String} * - Path to S3 Object.
- * @apiSuccess {Blob}
+ * @apiDescription Gets all metadata associated with the mediaID
+ * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
+ * @apiParam {String} mediaID - The id of the object.
+ * @apiParam {String} groupID - The id of the group that this media belongs too.
  * @apiVersion 1.0.0
  */
-router.get("/*", async (req,res,next) => { // should ensure the user has sufficient permissions to view the file
+router.get("/:mediaID", verifyIDs, verifyAccessToken, checkGroup, async (req,res,next) => {
+  try {
+    let doc = await DBMedia.findById(req.params.mediaID)
+    if(!doc) {
+      return next(error("Media object not found",404));
+    }
+    doc.__v = undefined;
+    return res.json(doc);
+  } catch(e) {
+    return next(error(e,500));
+  }
+  
+});
+
+
+
+/**
+ * @api {get} /apiv1/group/:groupID/media/display/:mediaID/:postfixID
+ * @apiName GetMedia
+ * @apiGroup Media
+ * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
+ * @apiParam {String} version - Can be `original`, `thumbnail`, `display`  if display then remember to add the postfixid
+ * @apiParam {String} mediaID - The id of the object.
+ * @apiParam {String} postfixID - The id of the object.
+ * @apiParam {String} groupID - The id of the group that this media belongs too.
+ * @apiVersion 1.0.0
+ */
+
+/**
+ * @api {get} /apiv1/group/:groupID/media/:version/:mediaID/:postfixID
+ * @apiName GetMedia
+ * @apiGroup Media
+ * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
+ * @apiParam {String} version - Can be `original`, `thumbnail`, `display`  if display then remember to add the postfixid
+ * @apiParam {String} mediaID - The id of the object.
+ * @apiParam {String} groupID - The id of the group that this media belongs too.
+ * @apiVersion 1.0.0
+ */
+router.get(["/:version/:mediaID", "/:version/:mediaID/:postfixID"], verifyIDs, verifyAccessToken, checkGroup, async (req,res,next) => { // should ensure the user has sufficient permissions to view the file
+  
+  
+  if(!req.params.version.match(/^((display)|(thumbnail)|(original))/g)) {
+      return next(error(`Got ${req.params.version} expected 'display', 'thumbnail', or 'original'`, 400));
+  }
+  if(req.params.version ==='display' && !req.params.postfixID) {
+    return next(error("`postfixID` required when using `display`", 400)) 
+  } else if(req.params.version !=='display' && req.params.postfixID) {
+    return next(error("`postfixID` required when using `display`", 400)) 
+  }
+  const path = `groups/${req.params.groupID}/usermedia/${req.params.version}/${req.params.mediaID}${(req.params.postfixID)?req.params.postfixID:''}`
+  //^((display)|(thumbnail)|(original))
   try {
     //let metaData = await storage.h(process.env.S3_BUCKET, req.params[0])
-    console.log(req.params[0])
-    let stream = await storage.getObject(process.env.S3_BUCKET, "usermedia/"+req.params[0])
+    console.log("Fetching from bucket using: ", path)
+    let stream = await storage.getObject(process.env.S3_BUCKET,path)
     stream.on('error', function error(err) {
         //continue to the next middlewares
         return next(err);
@@ -99,7 +179,7 @@ router.get("/*", async (req,res,next) => { // should ensure the user has suffici
   } catch(e) {
     console.error(e)
     if(e?.code == 'NoSuchKey') {
-      const err = new Error("Image not found"); 
+      const err = new Error("Media not found"); 
       err.status = 404;
       return next(err)
     } else {

@@ -1,10 +1,12 @@
 import express from 'express';
+
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 // import dotenv from 'dotenv';
 // dotenv.config()
 import './env.js'
+import "./lib/mongoose/DBConnect.js"
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 

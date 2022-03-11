@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./bin/www.js",
     "start:s3": "minio server ./localS3 --console-address \":9069\"",
-    "start:db": "brew services start mongodb-community"
+    "start:db": "brew services start mongodb-community",
+    "build:docs": "apidoc -i routes -o apidoc"
   },
   "dependencies": {
     "@smcloudstore/generic-s3": "^0.2.0",
@@ -21,13 +22,14 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb-queue-up": "^5.0.1",
     "mongoose": "^6.2.4",
+    "mongoose-paginate-v2": "^1.6.3",
     "morgan": "~1.9.1",
     "multer": "^1.4.4",
-    "passport": "^0.5.2",
-    "passport-http-bearer": "^1.0.1",
-    "passport-local": "^1.0.0",
     "sharp": "^0.30.2",
     "smcloudstore": "^0.2.1",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "apidoc": "^0.50.5"
   }
 }

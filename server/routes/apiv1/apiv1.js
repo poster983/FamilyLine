@@ -2,7 +2,13 @@ import express from 'express';
 var router = express.Router();
 import mediaAPI from "./mediaAPI.js"
 import authAPI from "./authAPI.js"
-router.use('/media', mediaAPI);
+import mongoose from 'mongoose';
+import { error } from "../../lib/errorUtils.js";
+
+
+//router.use(verifyIDs)
+
+router.use('/group/:groupID/media',  mediaAPI);
 router.use('/auth', authAPI)
 
 //error

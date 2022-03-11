@@ -1,11 +1,9 @@
-import passport from "passport"
-import {Strategy as LocalStrategy } from "passport-local";
-import {Strategy as BearerStrategy} from "passport-http-bearer";
 import jwt from "jsonwebtoken";
-import { schemas } from '../mongoose.js';
+import DBUser from "./mongoose/DBUser.js"
+import DBRefreshToken from "./mongoose/DBRefreshToken.js"
 import util from "util";
-const DBUser = schemas.User;
-const DBRefreshToken = schemas.RefreshToken
+import { error } from "./errorUtils.js";
+import { v4 as uuidv4 } from 'uuid';
 //const jwtVerify = util.promisify(jwt.verify);
 
 // export function hash(string) {
@@ -43,34 +41,106 @@ const DBRefreshToken = schemas.RefreshToken
 //     )
 //   );
 
+//MARK: Middleware
+
+/**
+ * Express Middleware - Verifies the access token without querying db for user
+ * Sets req.authorization to the token
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+export function verifyAccessToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+   let token;
+   if (authHeader?.startsWith("Bearer ")){
+        token = authHeader.substring(7, authHeader.length);
+    } else {
+        return next(error("Make sure your access token is provided in the `Authorization` header prefixed with `Bearer ` ", 401));
+    }
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.AUTH_JWT_PRIVATE_KEY)
+        if(decoded.type !== 'access') {
+            return next(error("Please provide an access token.  Remember to exchange your refresh token.", 401));
+        }
+        req.authorization = decoded;
+        next();
+    } catch(e) {
+        console.log(e)
+        return  next(error("Invalid Token", 403));
+    }
+}
+
+/**
+ * Middleware to check if the provided group id matched the authorization.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+ export function checkGroup(req,res,next) {
+    if(req.authorization?.groupIDs.includes(req.params['groupID'])) {
+      return next();
+    } else {
+      return next(error("Not permitted to access this group.", 403));
+    }
+  }
+
 // MARK: Bearer Strategy Auth (refresh token)
 /**
  * Given a refresh token, 
  * @param {*} refreshtoken 
+ * @returns new refreshToken and accessToken
  */
-// export async function exchangeRefreshToken(refreshtoken) {
-//     try {
-//         const token = jwt.verify(refreshtoken, process.env.AUTH_JWT_PRIVATE_KEY)
-//         const tdb = await DBRefreshToken.findById(token.jti);
-//         validateToken
-//         const newRefresh = tdb.generateToken()
-//         const saveProm = tdb.save();
-//         const accessToken = jwt.sign({
-//             type: "access",
-//             userID: token.userID,
-//             groupIDs: tdb
-//         }, , )
+export async function exchangeRefreshToken(refreshtoken) {
+    let result;
+    let token;
+    try {
+        token = jwt.verify(refreshtoken, process.env.AUTH_JWT_PRIVATE_KEY)
+        if(token.type !== 'refresh') {
+            throw error("Invalid Token", 401);
+        }
+        result = await Promise.all([DBRefreshToken.findById(token.jti), DBUser.findById(token.userID)])
+    } catch(e) {
+        console.log(e)
+        throw error("Invalid Token", 403);
+    }
+        const tdb = result[0];
+        const udb = result[1];
+        if(!tdb) {
+            throw error("Invalid Token", 401);
+        }
+        // if(await tdb.validateToken(refreshtoken)) {
+        //     throw error("Invalid Token", 401);
+        // }
+        if(!udb) {
+            throw error("User not found", 401);
+        }
+        try {
+            const newRefresh = tdb.generateToken()
+            const saveProm = tdb.save();
+            const accessToken = jwt.sign({
+                type: "access",
+                userID: token.userID,
+                groupIDs: udb.groupIDs,
+                generationID: tdb.generationID,
+                exp: Math.floor(Date.now() / 1000)+parseInt(process.env.AUTH_ACCESS_TOKEN_TIMEOUT) 
+            }, process.env.AUTH_JWT_PRIVATE_KEY, {jwtid: token.jti} )
+            
+       
+            await saveProm;
+            return {refreshToken: newRefresh, accessToken: accessToken};
+        } catch(e) {
+            console.error(e)
+            throw error("Could not generate new keys", 500);
+        }
+        
+        
 
-//         await saveProm;
-//         return {refreshToken: newRefresh, accessToken: accessToken};
-//     } catch(e) {
-//         console.log(e)
-//         throw error(e, 403);
-//     }
     
-//     // DBRefreshToken
-// }
-// console.log(await exchangeRefreshToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2MjI4ZjcxM2M2NDgzNTJlNjQ4Zjg5N2MiLCJnZW5lcmF0aW9uSUQiOiJlODc1MWQ5NC0zZGY3LTQwNWItOTk2OC04NGQ4Yjc1YjhlOGIiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTY0Njg1MTg2NywiZXhwIjoxNjQ2ODU1NDY3LCJqdGkiOiI2MjI4ZjcxM2M2NDgzNTJlNjQ4Zjg5N2QifQ.Ptr_IYwNtyBu2AsRO136c7XjxRE7FQ4tlxnnuOQC2zQ"))
+    // DBRefreshToken
+}
+//console.log(await exchangeRefreshToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2MjI5MzY5MjBjYjI3YzI3MzkxYWMzOWIiLCJnZW5lcmF0aW9uSUQiOiJkMTFjMGViOS05ODI0LTRhOWUtODFhNy0zOTk3NDAxZjE4ODYiLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTY0Njg3MTcxNCwiaWF0IjoxNjQ2ODY4MTE0LCJqdGkiOiI2MjI5MzY5MjBjYjI3YzI3MzkxYWMzOWMifQ.gM0YP6Iy9sbQC1MENzBp7rhHeDQQ1Prz4tKqe6yK5MY"))
 
 
 

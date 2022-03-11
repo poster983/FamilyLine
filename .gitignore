@@ -110,3 +110,5 @@ localS3/
 *.key
 
 *.key.pub
+
+apidoc/
