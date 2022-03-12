@@ -1,6 +1,7 @@
 import 'dart:js';
 
 import 'package:client/api/v1/AuthAPI.dart';
+import 'package:client/controllers/GalleryState.dart';
 import 'package:client/pages/ErrorPage.dart';
 import 'package:client/pages/GalleryPage.dart';
 import 'package:client/pages/LoginPage.dart';
@@ -11,13 +12,13 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:convert';
-import 'AppState.dart';
+import 'controllers/AppState.dart';
 
 main() async {
   //setup encryption keys for hive
   const secureStorage = FlutterSecureStorage();
   String? key = await secureStorage.read(key: 'HiveKey'); 
-  print('Encryption key: $key');
+  //print('Encryption key: $key');
   //create encryption key of it does not exist
   if (key == null) {
     key = base64UrlEncode(Hive.generateSecureKey());
@@ -32,13 +33,14 @@ main() async {
   await Hive.initFlutter();
   await Hive.openBox('settings');
   final authBox= await Hive.openBox('auth', encryptionCipher: HiveAesCipher(encryptionKey));
-  authBox.put("test", "peepee");
+  //authBox.put("test", "peepee");
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
-  
+  final controller = Get.put(AppState());
+  final galcontroller = Get.put(GalleryState());
   final _router = GoRouter(
     routes: [
       GoRoute(
@@ -56,6 +58,20 @@ class MyApp extends StatelessWidget {
     ],
     initialLocation: '/',
     errorBuilder: (context, state) => ErrorPage(error: state.error,),
+    // redirect: (state) {
+    //   // if the user is not logged in, they need to login
+    //   final loggedIn = loginInfo.loggedIn;
+    //   final loggingIn = state.subloc == '/login';
+    //   if (!loggedIn) return loggingIn ? null : '/login';
+
+    //   // if the user is logged in but still on the login page, send them to
+    //   // the home page
+    //   if (loggingIn) return '/';
+
+    //   // no need to redirect at all
+    //   return null;
+    // },
+
   );
   
   // This widget is the root of your application.
@@ -110,7 +126,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  final controller = Get.put(AppState());
+  
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has

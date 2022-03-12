@@ -1,9 +1,10 @@
+import 'package:client/api/v1/MediaAPI.dart';
+import 'package:client/controllers/AppState.dart';
+import 'package:client/controllers/GalleryState.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_grid/responsive_grid.dart';
-
-import '../AppState.dart';
 import '../widgets/AppScaffold.dart';
 
 class GalleryPage extends StatefulWidget {
@@ -16,11 +17,14 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State < GalleryPage > {
+  final GalleryState galleryState = Get.find();
+  int page = 1;
   late ScrollController controller;
   List < String > items = List.generate(1000, (index) => 'Hello $index');
 
   @override
   void initState() {
+    getMedia();
     super.initState();
     controller = ScrollController()..addListener(_scrollListener);
   }
@@ -31,11 +35,26 @@ class _GalleryPageState extends State < GalleryPage > {
     super.dispose();
   }
 
+  void getMedia() async {
+    try {
+        print(await listMedia(groupID: "622a2be6e2a57db0f12c682a"));
+    } catch(e) {
+      print(e.toString());
+    }
+    
+  }
+
+
+  // Widget photoGrid(BuildContext context) {
+
+  // }
+
   @override
   Widget build(BuildContext context) {
-    final AppState appState = Get.find();
-    double zoomValue = appState.mainGridZoom.value;
+    
+    double zoomValue = galleryState.mainGridZoom.value;
 
+    
     
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -48,13 +67,13 @@ class _GalleryPageState extends State < GalleryPage > {
       toolbar: [
         CupertinoSlider(
           activeColor: Colors.grey[200],
-          value: appState.mainGridZoom.value, 
+          value: galleryState.mainGridZoom.value, 
           min: 0.1,
           max: 1.0, 
           onChanged: (newZoom) {
             
             setState(() {
-              appState.mainGridZoom.value = newZoom;
+              galleryState.mainGridZoom.value = newZoom;
               zoomValue = newZoom;
             });
           })

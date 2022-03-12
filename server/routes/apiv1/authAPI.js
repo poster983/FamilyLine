@@ -70,6 +70,7 @@ router.post("/login", async (req,res,next) => {
  * @apiBody {String} refreshToken - The user's refreshtoken
  */
 router.post("/exchange", async (req,res,next) => {
+    console.log(req.body)
     if(!req.body.refreshToken) {
         return next(error("'refreshToken' required in json body"), 400);
     }

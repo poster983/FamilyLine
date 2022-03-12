@@ -1,5 +1,5 @@
 import 'package:adaptive_navigation/adaptive_navigation.dart';
-import 'package:client/AppState.dart';
+import 'package:client/controllers/AppState.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';

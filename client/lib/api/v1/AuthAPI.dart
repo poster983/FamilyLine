@@ -8,23 +8,51 @@ var auth = Hive.box('auth');
 String? refreshToken;
 String? accessToken;
 bool _remember = true;
+
+///Thrown when the user needs to relogin
+class RequireLogin implements Exception {
+  String errorMessage() {
+    return ("Need to login again");
+  }
+}
+
 /// 
 Future<String> loginWithEmailPassword({required String email, required String password, bool remember=true}) async {
   _remember = remember;
   String serverUrl = settings.get('server', defaultValue: "http://localhost:3000");
-  var res = await http.post(Uri.parse(serverUrl+"/apiv1/auth/login"), body: {'email': email, 'password': password});
-  Map<String, dynamic> tokens = jsonDecode(res.body);
-  if(_remember) {
-    auth.put('refreshToken', tokens['refreshToken']);
-  } else {
-    refreshToken = tokens['refreshToken'];
+  try {
+    var res = await http.post(Uri.parse(serverUrl+"/apiv1/auth/login"), body: {'email': email, 'password': password});
+    if(res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception(jsonDecode(res.body)['message']);
+    }
+    //print(res.reasonPhrase);
+    Map<String, dynamic> tokens = jsonDecode(res.body);
+    if(_remember) {
+      auth.put('refreshToken', tokens['refreshToken']);
+    } else {
+      refreshToken = tokens['refreshToken'];
+    }
+    
+    return tokens['refreshToken'];
+  } on Exception catch (exception) { 
+    print("exc");
+    print(exception);
+    rethrow;
+    } catch(e) {
+    print(e);
+    rethrow;
   }
   
-  return tokens['refreshToken'];
 }
 
 String? getRefreshToken() {
-  final jwt = auth.get("refreshToken", defaultValue: refreshToken);
+  String? jwt;
+  if(_remember) {
+    jwt = auth.get("refreshToken", defaultValue: refreshToken);
+  } else {
+    jwt =refreshToken;
+  }
+   
   if(jwt == null) {
     return null;
   }
@@ -33,6 +61,9 @@ String? getRefreshToken() {
   }
  return jwt;
 }
+
+
+
 //returns null if the refresh token is invalid or hasn't been set yet
 Future<String?> exchangeRefreshToken() async {
   String serverUrl = settings.get('server', defaultValue: "http://localhost:3000");
@@ -40,7 +71,11 @@ Future<String?> exchangeRefreshToken() async {
   if(rft == null) {
     return null;
   }
+  print({'refreshToken': rft});
   var res = await http.post(Uri.parse(serverUrl+"/apiv1/auth/exchange"), body: {'refreshToken': rft});
+  if(res.statusCode != 200 && res.statusCode != 201) {
+    throw Exception(jsonDecode(res.body)['message']);
+  }
   Map<String, dynamic> tokens = jsonDecode(res.body);
   if(_remember) {
     auth.put('refreshToken', tokens['refreshToken']);
@@ -56,7 +91,13 @@ Future<String?> exchangeRefreshToken() async {
 ///Gets the current access token 
 ///returns null if it is invalid or not set.
 String? getAccessToken() {
-  final jwt = auth.get("accessToken", defaultValue: accessToken);
+  String? jwt;
+  if(_remember) {
+    jwt = auth.get("accessToken", defaultValue: accessToken);
+  } else {
+    jwt =accessToken;
+  }
+  
   if(jwt == null) {
     return null;
   }
@@ -64,4 +105,40 @@ String? getAccessToken() {
     return null;
   }
  return jwt;
+}
+
+
+/// Logs the user out 
+Future<bool> logout() async{
+  //in the future also delete the refresh token
+  if(_remember) {
+    auth.put("accessToken", null);
+    auth.put("refreshToken", null);
+  } else {
+    refreshToken = null;
+    accessToken = null;
+  }
+
+  return true;
+}
+
+
+/// Will automaticly refresh the access token if expired
+Future<String> refreshAndGetAccessToken() async {
+  var accessToken = getAccessToken();
+  if(accessToken == null) { //may be invalid. try and exchange
+    try{ 
+        print("EXCHANGEW PLEASE");
+        accessToken = await exchangeRefreshToken();
+        if(accessToken == null) {
+          throw RequireLogin();
+        }
+    } catch(e) {
+      print(e);
+      throw RequireLogin();
+    }
+    
+  }
+
+  return accessToken;
 }

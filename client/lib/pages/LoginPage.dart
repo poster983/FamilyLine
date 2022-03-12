@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:responsive_grid/responsive_grid.dart';
+import 'package:go_router/go_router.dart';
 
-import '../AppState.dart';
+import '../controllers/AppState.dart';
+import '../utils.dart';
 import '../widgets/AppScaffold.dart';
 
 // class LoginPage extends StatefulWidget {
@@ -159,6 +161,7 @@ class __FormContentState extends State<_FormContent> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextFormField(
+              initialValue: "http://localhost:3000",
               validator: (value) {
                 // add email validation
                 if (value == null || value.isEmpty) {
@@ -277,13 +280,22 @@ class __FormContentState extends State<_FormContent> {
                           formResponse = "Email or password incorrect";
                         });
                       } else {
-                        Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-                        //context.
+                        setState(() {
+                          formResponse = "Logging in";
+                        });
+                        //Navigator.pushNamedAndRemoveUntil(context, "/", (r) => false);
+                        //Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+                        popAllPages(context);
+                        context.push('/');
                       }
+                    } on Exception catch (exception) { 
+                        setState(() {
+                          formResponse = exception.toString();
+                        });
                     } catch(e) {
-                      setState(() {
-                        formResponse = e.toString();
-                      });
+                        setState(() {
+                          formResponse = e.toString();
+                        });
                       
                     }
                     
