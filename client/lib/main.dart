@@ -1,21 +1,67 @@
+import 'dart:js';
+
+import 'package:client/api/v1/AuthAPI.dart';
+import 'package:client/pages/ErrorPage.dart';
 import 'package:client/pages/GalleryPage.dart';
+import 'package:client/pages/LoginPage.dart';
 import 'package:client/widgets/AppScaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-
+import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:convert';
 import 'AppState.dart';
 
-void main() {
-  runApp(const MyApp());
+main() async {
+  //setup encryption keys for hive
+  const secureStorage = FlutterSecureStorage();
+  String? key = await secureStorage.read(key: 'HiveKey'); 
+  print('Encryption key: $key');
+  //create encryption key of it does not exist
+  if (key == null) {
+    key = base64UrlEncode(Hive.generateSecureKey());
+    await secureStorage.write(
+      key: 'HiveKey',
+      value: key,
+    );
+  }
+  final encryptionKey = base64Url.decode(key);
+  //print('Encryption key: $encryptionKey');
+  //setup hive database
+  await Hive.initFlutter();
+  await Hive.openBox('settings');
+  final authBox= await Hive.openBox('auth', encryptionCipher: HiveAesCipher(encryptionKey));
+  authBox.put("test", "peepee");
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
+  MyApp({Key? key}) : super(key: key);
+  
+  final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const MyHomePage(title: 'Flutter Demo Home Page'),
+      ),
+      GoRoute(
+        path: '/gallery',
+        builder: (context, state) => const GalleryPage(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginPage(),
+      ),
+    ],
+    initialLocation: '/',
+    errorBuilder: (context, state) => ErrorPage(error: state.error,),
+  );
+  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return GetMaterialApp.router(
       title: 'Family Line',
       theme: ThemeData(
         // This is the theme of your application.
@@ -29,17 +75,20 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      routes: {
-        // When navigating to the "/" route, build the FirstScreen widget.
-        '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
-        // When navigating to the "/second" route, build the SecondScreen widget.
-        '/gallery': (context) => const GalleryPage(),
-      },
+      routeInformationParser: _router.routeInformationParser,
+      routerDelegate: _router.routerDelegate,
+      // routes: {
+      //   // When navigating to the "/" route, build the FirstScreen widget.
+      //   '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
+      //   // When navigating to the "/second" route, build the SecondScreen widget.
+      //   '/gallery': (context) => const GalleryPage(),
+      // },
 
       //home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -73,8 +122,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  
+
+
   @override
   Widget build(BuildContext context) {
+    // if(getRefreshToken() == null) { // not logged in
+    //   context.go("/login");
+    //   return Container();
+    // }
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //

@@ -4,8 +4,9 @@ import mediaAPI from "./mediaAPI.js"
 import authAPI from "./authAPI.js"
 import mongoose from 'mongoose';
 import { error } from "../../lib/errorUtils.js";
-
-
+import cors from "cors"
+router.use(cors());
+router.options('*', cors())
 //router.use(verifyIDs)
 
 router.use('/group/:groupID/media',  mediaAPI);

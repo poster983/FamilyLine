@@ -2,7 +2,7 @@ import 'package:adaptive_navigation/adaptive_navigation.dart';
 import 'package:client/AppState.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:go_router/go_router.dart';
 // TODO: BAD VERY BAD GET RID OF THIS
 int selected = 0;
 
@@ -108,7 +108,7 @@ class AppScaffold extends StatelessWidget {
           selectedIndex: appState.pageIndex.value,
           destinations: destinations.map((e) => e.widget).toList(),
           onDestinationSelected: (_index) {
-            Get.toNamed(destinations[_index].nav);
+            context.go(destinations[_index].nav);
             appState.pageIndex.value = _index;
           },
           appBar: AdaptiveAppBar(title: const Text('Default Demo'), actions: toolbar),
