@@ -196,7 +196,7 @@ export async function uploadObject(fileinfo, groupID) {
   //determine if object needs to be queued for processing (images, video, audio, docs)
   const filetype = checkFileType(fileinfo);
   if(!filetype) {
-    throw error()
+    throw error("Unsupported Media Type", 415);
   }
 
   let file;
