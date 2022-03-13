@@ -54,12 +54,12 @@ async function createNewGroup(user) {
 }
 
 
-// createNewGroup({
-//     name: {
-//         given: "First",
-//         family: "last",
-//         lalal: "plz break"
-//     },
-//     email: "junk@google.com",
-//     password: 123456
-// })
+createNewGroup({
+    name: {
+        given: "First",
+        family: "last",
+        lalal: "plz break"
+    },
+    email: "junk@google.com",
+    password: 123456
+})
