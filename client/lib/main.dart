@@ -1,10 +1,9 @@
-import 'dart:js';
-
 import 'package:client/api/v1/AuthAPI.dart';
 import 'package:client/controllers/GalleryState.dart';
 import 'package:client/pages/ErrorPage.dart';
 import 'package:client/pages/GalleryPage.dart';
 import 'package:client/pages/LoginPage.dart';
+import 'package:client/pages/MediaPage.dart';
 import 'package:client/widgets/AppScaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -15,6 +14,7 @@ import 'dart:convert';
 import 'controllers/AppState.dart';
 
 main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   //setup encryption keys for hive
   const secureStorage = FlutterSecureStorage();
   String? key = await secureStorage.read(key: 'HiveKey'); 
@@ -48,9 +48,23 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
       GoRoute(
-        path: '/gallery',
-        builder: (context, state) => const GalleryPage(),
+        path: "/group/:groupID",
+        //redirect: (_) =>  "/",
+        builder: (c, s) => GalleryPage(groupID: s.params['groupID'] ?? ""),
+        routes: [
+          GoRoute(
+            path: "media/:mediaID",
+            builder: (context, state) {
+              //Map<String, dynamic> = state.extra[;
+              return MediaPage(groupID: state.params['groupID'] ?? "", mediaID: state.params['mediaID'] ?? "", mediaDoc: (state.extra != null)?state.extra as Map<String, dynamic>:null,);
+            }
+          )
+        ]
       ),
+      // GoRoute(
+      //   path: '/gallery',
+      //   builder: (context, state) => 
+      // ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginPage(),
@@ -153,7 +167,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return AppScaffold(child: Text("hello"));
+    return AppScaffold(child: ElevatedButton(
+      child: Text("Login Page"),
+      onPressed: () {
+        context.go("/login");
+      },
+    ));
     // return Scaffold(
     //   appBar: AppBar(
     //       // Here we take the value from the MyHomePage object that was created by

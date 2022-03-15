@@ -38,7 +38,7 @@ import mongoosePaginate from "mongoose-paginate-v2";
     // storageID: {type: String, required: true},
     uploaded: {type: Date, default: Date.now},
     lastModified: {type: Date, default: Date.now},
-    sortDate: {type: Date, default: Date.now},
+    sortDate: {type: Date, default: Date.now, index: -1},
     encoding: {  
         progress: Number,
         link: String,

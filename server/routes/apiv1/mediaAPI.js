@@ -82,6 +82,7 @@ const verifyIDs = (req,res,next) => {
     } else {
       req.query.filter = {}
     }
+    //console.
     let opts = new PaginationParameters(req).get()
     opts[0] = req.query.filter;
     //console.log(opts)
@@ -125,39 +126,30 @@ router.get("/:mediaID", verifyIDs, verifyAccessToken, checkGroup, async (req,res
 
 
 /**
- * @api {get} /apiv1/group/:groupID/media/display/:mediaID/:postfixID
- * @apiName GetMedia
- * @apiGroup Media
- * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
- * @apiParam {String} version - Can be `original`, `thumbnail`, `display`  if display then remember to add the postfixid
- * @apiParam {String} mediaID - The id of the object.
- * @apiParam {String} postfixID - The id of the object.
- * @apiParam {String} groupID - The id of the group that this media belongs too.
- * @apiVersion 1.0.0
- */
 
 /**
- * @api {get} /apiv1/group/:groupID/media/:version/:mediaID/:postfixID
+ * @api {get} /apiv1/group/:groupID/media/:version/:mediaID/:versionID
  * @apiName GetMedia
  * @apiGroup Media
  * @apiHeader {String} Authorization - Formatted as `Bearer {AccessToken}`
- * @apiParam {String} version - Can be `original`, `thumbnail`, `display`  if display then remember to add the postfixid
+ * @apiParam {String} version - Can be `original`, `thumbnail`, `display`  if display then remember to add the versionID
  * @apiParam {String} mediaID - The id of the object.
  * @apiParam {String} groupID - The id of the group that this media belongs too.
+ * @apiParam {String} versionID - Used with display.  The version of the file to use.
  * @apiVersion 1.0.0
  */
-router.get(["/:version/:mediaID", "/:version/:mediaID/:postfixID"], verifyIDs, verifyAccessToken, checkGroup, async (req,res,next) => { // should ensure the user has sufficient permissions to view the file
+router.get(["/:version/:mediaID", "/:version/:mediaID/:versionID"], verifyIDs, verifyAccessToken, checkGroup, async (req,res,next) => { // should ensure the user has sufficient permissions to view the file
   
   
   if(!req.params.version.match(/^((display)|(thumbnail)|(original))/g)) {
       return next(error(`Got ${req.params.version} expected 'display', 'thumbnail', or 'original'`, 400));
   }
-  if(req.params.version ==='display' && !req.params.postfixID) {
-    return next(error("`postfixID` required when using `display`", 400)) 
-  } else if(req.params.version !=='display' && req.params.postfixID) {
-    return next(error("`postfixID` required when using `display`", 400)) 
+  if(req.params.version ==='display' && !req.params.versionID) {
+    return next(error("`versionID` required when using `display`", 400)) 
+  } else if(req.params.version !=='display' && req.params.versionID) {
+    return next(error("`versionID` required when using `display`", 400)) 
   }
-  const path = `groups/${req.params.groupID}/usermedia/${req.params.version}/${req.params.mediaID}${(req.params.postfixID)?"/"+req.params.postfixID:''}`
+  const path = `groups/${req.params.groupID}/usermedia/${req.params.version}/${req.params.mediaID}${(req.params.versionID)?"/"+req.params.versionID:''}`
   //^((display)|(thumbnail)|(original))
   try {
     //let metaData = await storage.h(process.env.S3_BUCKET, req.params[0])

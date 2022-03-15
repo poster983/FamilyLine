@@ -52,6 +52,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export function verifyAccessToken(req, res, next) {
     const authHeader = req.headers['authorization'];
+    //console.log("Auth", authHeader)
    let token;
    if (authHeader?.startsWith("Bearer ")){
         token = authHeader.substring(7, authHeader.length);

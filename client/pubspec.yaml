@@ -40,6 +40,9 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   jwt_decoder: ^2.0.1
   flutter_blurhash: ^0.6.4
+  cached_network_image: ^3.2.0
+  zoom_widget: ^0.2.1
+  universal_html: ^2.0.8
 
 
 dev_dependencies:

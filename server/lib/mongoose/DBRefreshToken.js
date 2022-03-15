@@ -23,7 +23,7 @@ const DBRefreshToken = new mongoose.Schema({
     userID: {type: mongoose.Schema.ObjectId, required: true},
     generationID: {type: String},
     created: {type: Date, default: Date.now},
-    lastRefreshed: {type: Date, default: Date.now, expires: expireSeconds},
+    lastRefreshed: {type: Date, default: Date.now, expires: parseInt(expireSeconds)},
     device: {
         ip: {type: String},
         ua: String
@@ -68,3 +68,5 @@ const DBRefreshToken = new mongoose.Schema({
 //     return compare;
 // }
 export default mongoose.model('refreshtokens', DBRefreshToken);
+
+

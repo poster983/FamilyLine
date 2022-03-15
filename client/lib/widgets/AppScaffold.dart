@@ -49,7 +49,7 @@ class AppScaffold extends StatelessWidget {
             onTap: () {
               // Update the state of the app.
               // ...
-              Get.toNamed("/gallery");
+              Get.toNamed("/group/622e80202d9894fe032c4eac/gallery");
             },
           ),
           ListTile(
@@ -81,7 +81,7 @@ class AppScaffold extends StatelessWidget {
     _NavItem(
         widget: const AdaptiveScaffoldDestination(
             title: 'Gallery', icon: Icons.photo_size_select_actual_rounded),
-        nav: "/gallery"),
+        nav: "/group/622e80202d9894fe032c4eac"),
   ];
 
   @override

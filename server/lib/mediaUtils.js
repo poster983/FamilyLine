@@ -10,6 +10,7 @@ import sharp from "sharp";
 import storage from "../s3.js"
 import { error } from "./errorUtils.js";
 import DBMedia from './mongoose/DBMedia.js';
+import DBGroup from './mongoose/DBGroup.js';
 import {encoder} from './mongoose/DBQueues.js';
 import { encode } from "blurhash";
 import { v4 as uuidv4 } from 'uuid';

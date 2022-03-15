@@ -13,7 +13,7 @@ class ErrorPage extends StatelessWidget {
         body: Center(
             child: Column(children: [
               const Text("There was an error!"),
-              Text(error.toString())
+              SelectableText(error.toString())
             ],
         ))
     );
