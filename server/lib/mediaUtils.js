@@ -51,7 +51,7 @@ export const mediaTypes = {
 
 export function checkFileType(file) {
   // Allowed ext
-  const allowedImageTypes = /jpeg|jpg|png|webp/ // convert to webp
+  const allowedImageTypes = /jpeg|jpg|png|webp|heic/ // convert to webp
   const allowedVideoTypes = /mp4|webm/ // convert to webm
   const allowedAudioTypes = /mp3|ogg|opus|wav/ // convert to ogg
   const allowedDocumentTypes = /pdf|epub/
