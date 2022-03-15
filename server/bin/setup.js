@@ -37,7 +37,7 @@ async function createNewGroup(user) {
             throw error(e, 500)
         }
         try {
-            await Promise.all([_user.save(), _group.save()]);
+            await Promise.all([ _group.save(), _user.save()]);
         } catch (e) {
             await session.abortTransaction();
             throw error(e, 500) // TODO: Revert to previous state
@@ -56,7 +56,7 @@ async function createNewGroup(user) {
 
 createNewGroup({
     name: {
-        given: "First",
+        //given: "First",
         family: "last",
         lalal: "plz break"
     },

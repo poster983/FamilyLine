@@ -12,7 +12,7 @@ const upload = multer({
   dest: tmpdir()+'/familyline_useruploads', 
   limits: { fileSize: 2000000000 }
 })
-
+console.log("Upload Directory: " + tmpdir()+'/familyline_useruploads')
 import DBMedia from '../../lib/mongoose/DBMedia.js';
 import {verifyAccessToken, checkGroup} from "../../lib/authUtils.js"
 import { uploadObject} from "../../lib/mediaUtils.js";
@@ -157,7 +157,7 @@ router.get(["/:version/:mediaID", "/:version/:mediaID/:postfixID"], verifyIDs, v
   } else if(req.params.version !=='display' && req.params.postfixID) {
     return next(error("`postfixID` required when using `display`", 400)) 
   }
-  const path = `groups/${req.params.groupID}/usermedia/${req.params.version}/${req.params.mediaID}${(req.params.postfixID)?req.params.postfixID:''}`
+  const path = `groups/${req.params.groupID}/usermedia/${req.params.version}/${req.params.mediaID}${(req.params.postfixID)?"/"+req.params.postfixID:''}`
   //^((display)|(thumbnail)|(original))
   try {
     //let metaData = await storage.h(process.env.S3_BUCKET, req.params[0])

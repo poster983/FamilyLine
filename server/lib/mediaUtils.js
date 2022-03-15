@@ -159,27 +159,25 @@ preprocess.image = async (fileinfo, options) => {
 
 export function encodeImageToBlurhash (pathOrBuffer) {
   return new Promise((resolve, reject) => {
-    sharp(pathOrBuffer)
+    try {
+      sharp(pathOrBuffer)
       .raw()
       .ensureAlpha()
       .resize(32, 32, { fit: "inside" })
-      .toBuffer((err, buffer, { width, height }) => {
+      .toBuffer((err, buffer, prop) => {
         if (err) return reject(err);
-        resolve(encode(new Uint8ClampedArray(buffer), width, height, 4, 4));
+        resolve(encode(new Uint8ClampedArray(buffer), prop.width, prop.height, 4, 4));
       });
+    } catch(e) {
+      reject(e);
+    }
+    
   });
 }
 
 
 
-export async function findMediaObjects(filter) {
 
-  let query = {
-    
-  }
-
-  //DBMedia.find()
-}
 
 
 
@@ -198,7 +196,7 @@ export async function uploadObject(fileinfo, groupID) {
   if(!filetype) {
     throw error("Unsupported Media Type", 415);
   }
-
+  fileinfo.mimetype = fileinfo.mimetype.toLowerCase();
   let file;
   //open file
   try {
@@ -209,13 +207,16 @@ export async function uploadObject(fileinfo, groupID) {
   }
 
   //generate blurhash
-  let blurhash = null;
-  try {
-    blurhash = await encodeImageToBlurhash(file)
-    //console.log(blurhash)
-  } catch(e) {
-    throw error(e, 500)
-  }
+  // let blurhash = null;
+  // if(filetype == mediaTypes.Image) {
+  //   try {
+  //     blurhash = await encodeImageToBlurhash(file)
+  //     //console.log(blurhash)
+  //   } catch(e) {
+  //     throw error(e, 500)
+  //   }
+  // }
+  
   
 
   //create record of object in DB.  (uuid, groupID, type[image,video,audio,doc], uploadDate, modifiedDate, processing{},  metadata{}, notes:Str, blurhash, paths: {original: })
@@ -229,7 +230,7 @@ export async function uploadObject(fileinfo, groupID) {
     metadata: {
       filename: fileinfo.originalname
     },
-    blurhash: blurhash,
+    //blurhash: blurhash,
   })
 
 
@@ -263,7 +264,7 @@ export async function uploadObject(fileinfo, groupID) {
 
   let queueID = null;
   try {
-    queueID = await encoder.add({mediaID: dbobj._id, processingPath: processingPath});
+    queueID = await encoder.add({mediaID: dbobj._id, processingPath: processingPath, mimetype: fileinfo.mimetype});
     // await new Promise((resolve, reject) => {
     //   queue.encoder.raw.add({mediaID: dbobj._id, processingPath: processingPath}, (e, i) => {
     //     if(e) {

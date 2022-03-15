@@ -16,7 +16,6 @@ import mongoosePaginate from "mongoose-paginate-v2";
  * @property {String} encoding.link - the link in s3 for the file to be processing 
  * @property {Date|null} encoding.finished
  * @property {Date|null} encoding.started 
- * @property {ObjectId} encoding.jobQueueID - the id of the job in the queue
  * @property {Object} metadata
  * @property {String} metadata.filename - The OG filename
  * @property {Number} metadata.totalSize - The total size that this object takes up.
@@ -45,7 +44,7 @@ import mongoosePaginate from "mongoose-paginate-v2";
         link: String,
         finished: Date,
         started: Date,
-        jobQueueID: mongoose.Schema.ObjectId
+        //jobQueueID: mongoose.Schema.ObjectId
     },
     metadata: {
         filename: {type: String, required: true},

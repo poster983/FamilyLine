@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 //MARK: Long Lived  Refresh Bearer Tokens
 const expireSeconds = process.env.AUTH_REFRESH_TOKEN_TIMEOUT; // 1 hour 
+console.log(expireSeconds)
 /**
  * Long lived refresh bearer token to be exchanged for access tokens
  * @typedef {Object} DBRefreshToken

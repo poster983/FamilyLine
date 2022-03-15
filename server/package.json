@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./bin/www.js",
     "start:s3": "minio server ./localS3 --console-address \":9069\"",
-    "start:db": "mongod --port 27017 --dbpath ../mongodb --replSet rs0 --bind_ip localhost",
+    "start:db": "mongod --port 27017 --dbpath ../mongodb --replSet rs0 --bind_ip 127.0.0.1",
     "build:docs": "apidoc -i routes -o apidoc"
   },
   "dependencies": {
