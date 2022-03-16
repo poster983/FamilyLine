@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
-import 'package:universal_html/html.dart' as html;
-
+import 'package:universal_html/html.dart' as html; // todo remove this and figure out a way to split code for versions
+//import 'package:universal_html/html.dart' as html;
 class PlatformImage extends StatefulWidget {
   PlatformImage({Key? key, this.url, this.placeholder, this.errorWidget, this.headers, this.fit=BoxFit.contain, this.width, this.height}) : super(key: key);
 
@@ -21,12 +21,15 @@ class PlatformImage extends StatefulWidget {
   State < PlatformImage > createState() => _PlatformImageState();
 }
 
-class _PlatformImageState extends State < PlatformImage > {
+class _PlatformImageState extends State < PlatformImage > with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;  //TODO: This may induse memory issues later with lots of images.  Need a better way to lazy load images
 
   String? webURL;
 
   @override
   void dispose() {
+    print("Dispose");
      if(kIsWeb && webURL != null) {
        html.Url.revokeObjectUrl(webURL!);
       }

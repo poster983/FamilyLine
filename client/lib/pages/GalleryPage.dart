@@ -32,6 +32,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
   final GalleryState galleryState = Get.find();
   int page = 0;
   int totalPages = 1;
+  bool loadLock = false;
   late ScrollController controller;
   List < dynamic > items = [];
   bool loaded = false;
@@ -55,15 +56,21 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
 
   void getMedia() async {
     try {
+
+      loadLock = true;
       if (totalPages == page) { //we hit the end
         print("Loaded all media");
         return;
       }
+      
       Map < String, dynamic > data = await listMedia(groupID: widget.groupID, page: page + 1, filter: {
         'blurhash': {
           '\$exists': true
         }
       });
+      
+      loadLock = false;
+      print("pee");
       accessToken = await refreshAndGetAccessToken();
       //print(data['docs'][0]['blurhash']); 
       //print(jsonDecode(data['docs']));
@@ -257,7 +264,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
   }
 
   void _scrollListener() {
-    if (totalPages > page && controller.hasClients) {
+    if (!loadLock && controller.hasClients) {// (!hasNextPage || totalPages >= page)
       // print(controller.position.extentAfter);
       if (controller.position.extentAfter < 500) {
         print("will fetch more");

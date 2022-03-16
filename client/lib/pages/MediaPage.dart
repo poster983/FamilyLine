@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:hive/hive.dart';
-import 'package:zoom_widget/zoom_widget.dart';
+//import 'package:zoom_widget/zoom_widget.dart';
 
 var settings = Hive.box('settings');
 
@@ -31,7 +31,7 @@ class _MediaPageState extends State < MediaPage > {
   String? errorMessage;
   String? accessToken;
 
-  var imageKey = UniqueKey();
+  //var imageKey = UniqueKey();
   @override
   void initState() {
     mediaDoc = widget.mediaDoc;
@@ -106,13 +106,12 @@ class _MediaPageState extends State < MediaPage > {
     }
     String url = settings.get("server", defaultValue: "") + "/apiv1/group/"+widget.groupID+"/media/display/"+mediaDoc!["_id"]+"/"+versionID;
     String? blurhash = mediaDoc?['blurhash'];
-    return Zoom(
-      maxZoomWidth: 1920,
-      maxZoomHeight: 1080,
-      enableScroll: true,
-      doubleTapZoom: true,
-      child: PlatformImage(
-        key: imageKey,
+    return InteractiveViewer(
+       //boundaryMargin: const EdgeInsets.all(20.0),
+        minScale: 1,
+        maxScale: 9,
+        child: PlatformImage(
+        //key: imageKey,
       headers: {
         "Authorization": "Bearer " + accessToken!
       },
@@ -120,6 +119,20 @@ class _MediaPageState extends State < MediaPage > {
       placeholder: (context, url) => (blurhash != null )?BlurHash(hash: blurhash):const CircularProgressIndicator.adaptive(),
       errorWidget: (context, url, error) => errorWidget(context, error),
     ));
+    // return Zoom(
+    //   maxZoomWidth: 1920,
+    //   maxZoomHeight: 1080,
+    //   enableScroll: true,
+    //   doubleTapZoom: true,
+    //   child: PlatformImage(
+    //     key: imageKey,
+    //   headers: {
+    //     "Authorization": "Bearer " + accessToken!
+    //   },
+    //   url: url,
+    //   placeholder: (context, url) => (blurhash != null )?BlurHash(hash: blurhash):const CircularProgressIndicator.adaptive(),
+    //   errorWidget: (context, url, error) => errorWidget(context, error),
+    // ));
   }
 
 
