@@ -50,7 +50,10 @@ class MyApp extends StatelessWidget {
       GoRoute(
         path: "/group/:groupID",
         //redirect: (_) =>  "/",
-        builder: (c, s) => GalleryPage(groupID: s.params['groupID'] ?? ""),
+        builder: (c, s) {
+          print("Can check for auth");
+          return GalleryPage(groupID: s.params['groupID'] ?? "");
+        },
         routes: [
           GoRoute(
             path: "media/:mediaID",

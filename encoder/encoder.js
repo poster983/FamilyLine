@@ -11,11 +11,12 @@ const rawMedia = db.collection("media");
 
 // Wait for new jobs
 rawQueue.watch().on("change", async (data) => {
-    handleQueue();
+    //handleQueue();
     
-    // if(data.operationType == 'insert') {
-        
-    // }
+     if(data.operationType == 'insert') {
+         console.log("insert")
+        handleQueue();
+     }
     //console.log("DATA", data)
 });
 
@@ -29,6 +30,7 @@ async function handleQueue() {
             if(mediaDoc.type == "IMAGE") {
                 imageEncoder(job, mediaDoc);
             }
+            handleQueue(); // go again if theres more in the queue
         } else {
             // remove job as media does not exist
             encoderQueue.ack(job.ack)

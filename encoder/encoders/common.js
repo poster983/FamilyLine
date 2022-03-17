@@ -47,7 +47,7 @@ export function encodeImageToBlurhash(mediaDoc, pathOrBuffer) {
 export async function createThumbnail(mediaDoc,rawFile) {
   return new Promise((resolve, reject) => {
       sharp(rawFile)
-          .resize({ width: 256})
+          .resize({ width: 375})
           .webp( {quality: 40})
           .toBuffer(async (err, buffer, prop) => {
               if (err) return reject(err);

@@ -1,10 +1,11 @@
 import 'package:adaptive_navigation/adaptive_navigation.dart';
 import 'package:client/controllers/AppState.dart';
+import 'package:client/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-// TODO: BAD VERY BAD GET RID OF THIS
-int selected = 0;
+
+
 
 // class AppScaffold extends StatefulWidget {
 //   const AppScaffold({Key? key, required this.child, this.toolbar})
@@ -111,13 +112,22 @@ class AppScaffold extends StatelessWidget {
             context.go(destinations[_index].nav);
             appState.pageIndex.value = _index;
           },
-          appBar: AdaptiveAppBar(title: const Text('Default Demo'), actions: toolbar),
+          appBar: AdaptiveAppBar(title: const Text('FamilyLine'), actions: toolbar),
           body: child,
           floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () {
+            child: const Icon(Icons.upload_rounded),
+            onPressed: () async {
               print(appState.pageIndex.value);
-            },
+              var files = await showUploadUI(context);
+              if(files ==null) {
+                return;
+              }
+              for (var element in files.files) {
+                if(element.readStream == null) {
+                  continue;
+                }
+                appState.uploader.queueUpload(filename: element.name, fileStream: element.readStream!);
+              }},
           ),
           fabInRail: true,
           includeBaseDestinationsInMenu: true,
@@ -130,3 +140,5 @@ class _NavItem {
   final String nav;
   _NavItem({required this.widget, required this.nav});
 }
+
+

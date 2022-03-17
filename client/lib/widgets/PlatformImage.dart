@@ -26,12 +26,14 @@ class _PlatformImageState extends State < PlatformImage > with AutomaticKeepAliv
   bool get wantKeepAlive => true;  //TODO: This may induse memory issues later with lots of images.  Need a better way to lazy load images
 
   String? webURL;
-
+  bool disposed = false;
   @override
   void dispose() {
-    print("Dispose");
+    disposed = true;
+    print("Dispose sdsfdfsdfdsdfsfdsfsd");
      if(kIsWeb && webURL != null) {
        html.Url.revokeObjectUrl(webURL!);
+       webURL=null;
       }
     super.dispose();
   }
@@ -42,11 +44,11 @@ class _PlatformImageState extends State < PlatformImage > with AutomaticKeepAliv
       }
       final res = await http.get(Uri.parse(url), headers: widget.headers);
       final blob = html.Blob([res.bodyBytes]);
-      
-      setState(() {
-        webURL = html.Url.createObjectUrlFromBlob(blob);
-        widget.url = webURL;
-      });
+      if(!disposed) {
+        setState(() {
+          webURL = html.Url.createObjectUrlFromBlob(blob);
+        });
+      }
 
       return webURL;
 
@@ -64,7 +66,7 @@ class _PlatformImageState extends State < PlatformImage > with AutomaticKeepAliv
   Widget cachedImage() {
     return CachedNetworkImage(
         httpHeaders: widget.headers,
-        imageUrl: widget.url ?? "http://0.0.0.0",
+        imageUrl: webURL ?? widget.url ?? "http://0.0.0.0",
         placeholder: widget.placeholder,
         errorWidget: widget.errorWidget,
         fit: widget.fit,
