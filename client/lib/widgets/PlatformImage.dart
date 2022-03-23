@@ -5,25 +5,25 @@ import 'package:http/http.dart' as http;
 import 'package:universal_html/html.dart' as html; // todo remove this and figure out a way to split code for versions
 //import 'package:universal_html/html.dart' as html;
 class PlatformImage extends StatefulWidget {
-  PlatformImage({Key? key, this.url, this.placeholder, this.errorWidget, this.headers, this.fit=BoxFit.contain, this.width, this.height}) : super(key: key);
+  const PlatformImage({Key? key, this.url, this.placeholder, this.errorWidget, this.headers, this.fit=BoxFit.contain, this.width, this.height}) : super(key: key);
 
 
-  String? url;
-  BoxFit fit;
-  double? width;
-  double? height;
+  final String? url;
+  final BoxFit fit;
+  final double? width;
+  final double? height;
   //String? 
-  Widget Function(BuildContext, String)? placeholder;
-  Widget Function(BuildContext, String, dynamic)? errorWidget;
-  Map<String, String>? headers;
+  final Widget Function(BuildContext, String)? placeholder;
+  final Widget Function(BuildContext, String, dynamic)? errorWidget;
+  final Map<String, String>? headers;
 
   @override
   State < PlatformImage > createState() => _PlatformImageState();
 }
 
-class _PlatformImageState extends State < PlatformImage > with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;  //TODO: This may induse memory issues later with lots of images.  Need a better way to lazy load images
+class _PlatformImageState extends State < PlatformImage > { // with AutomaticKeepAliveClientMixin
+  // @override
+  // bool get wantKeepAlive => false;  //TODO: This may induse memory issues later with lots of images.  Need a better way to lazy load images
 
   String? webURL;
   bool disposed = false;

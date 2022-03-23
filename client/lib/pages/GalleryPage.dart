@@ -223,6 +223,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
 
   Widget photoGrid(BuildContext context) {
     return GridView.builder(
+      cacheExtent: MediaQuery.of(context).size.height*5,
       controller: controller,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: ((MediaQuery.of(context).size.width > 600) ? 200 * (pow(galleryState.mainGridZoom.value, 1.5) * 2) : 400 * (pow(galleryState.mainGridZoom.value, 1.5) * 0.9)),
@@ -257,7 +258,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
           min: 0.1,
           max: 1.0,
           onChanged: (newZoom) {
-            print(pow(newZoom, 2));
+            //print(pow(newZoom, 2));
             setState(() {
               galleryState.mainGridZoom.value = newZoom;
             });
