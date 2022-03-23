@@ -5,6 +5,7 @@ import 'package:client/pages/GalleryPage.dart';
 import 'package:client/pages/LoginPage.dart';
 import 'package:client/pages/MediaPage.dart';
 import 'package:client/widgets/AppScaffold.dart';
+import 'package:client/widgets/CupertinoFullscreenModal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -170,7 +171,15 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return AppScaffold(child: ElevatedButton(
+    return AppScaffold(
+      toolbar: [
+        IconButton(onPressed: () {
+          //CupertinoFullscreenModal.of(context)?.showModal(const Text("Hello"));
+          
+          CupertinoFullscreenModalState().showModal(const Text("Hello"));
+        }, icon: const Icon(Icons.window))
+      ],
+      child: ElevatedButton(
       child: Text("Login Page"),
       onPressed: () {
         context.go("/login");

@@ -233,7 +233,7 @@ class BlurredAppBar extends StatelessWidget implements PreferredSizeWidget {
                         tooltip: "View Info",
                         onPressed: () {
                           print("Open info Model");
-                          //CupertinoFullscreenModal.of(context).showModal(MetadataModal());
+                          CupertinoFullscreenModal.of(context)?.showModal(const MetadataModal());
                         },
                         icon: const Icon(Icons.info_outline),
                       ),

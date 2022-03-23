@@ -24,7 +24,9 @@ class CupertinoFullscreenModal extends StatefulWidget {
   }) : super(key: key);
 
   static CupertinoFullscreenModalState? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<CupertinoFullscreenModalInherited>()!.data;
+    final CupertinoFullscreenModalInherited? one = context.dependOnInheritedWidgetOfExactType<CupertinoFullscreenModalInherited>();
+    print(one);
+    return one?.data;
   }
 
   @override
