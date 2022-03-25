@@ -111,6 +111,22 @@ export async function exchangeRefreshToken(refreshtoken) {
         if(!tdb) {
             throw error("Invalid Token", 401);
         }
+
+        //check for double use attack
+        if(token.generationID != tdb.generationID) {
+            //invalidate all previous and present refresh tokens
+            try {
+                await DBRefreshToken.deleteOne({_id: token.jti})
+            } catch(e) {
+                console.error(e);
+            }
+
+            // TODO: ask user if they want to update their password.
+            console.log("double use attack")
+            throw error("This refresh token has been used multiple times", 401);
+
+        }
+
         // if(await tdb.validateToken(refreshtoken)) {
         //     throw error("Invalid Token", 401);
         // }

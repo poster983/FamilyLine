@@ -12,9 +12,31 @@ const rawMedia = db.collection("media");
 
 export async function imageEncoder(job, mediaDoc) {
     console.log("Encoding image: " + mediaDoc._id);
+    let epoch = Date.now()
+    
 
+    const pingInterval = setInterval(async () => {
+      try {
+        console.log("pinging");
+        await encoderQueue.ping(job.ack, {visibility: process.env.JOB_TIMEOUT_S});
+      } catch(e) {
+        console.error(e);
+        clearInterval(pingInterval)
+      }
+    },(process.env.JOB_TIMEOUT_S*1000)-20)
     //ping the job 
-    encoderQueue.ping(job.ack);
+    
+    //Initial Ack
+    try {
+      await encoderQueue.ping(job.ack, {visibility: process.env.JOB_TIMEOUT_S});
+    } catch(e) {
+      console.error(e);
+      
+      clearInterval(pingInterval)
+      return;
+    }
+    
+    
 
     //process
     rawMedia.updateOne({_id: mediaDoc._id, 'encoding.started': {$exists : false}}, {$set: { encoding: { // update the progress
@@ -25,7 +47,12 @@ export async function imageEncoder(job, mediaDoc) {
     //Get Raw file from S3
     let object;
     try {
-        encoderQueue.ping(job.ack);
+      // try {
+      //   await encoderQueue.ping(job.ack);
+      // } catch(e) {
+      //   console.error(e);
+      //   return;
+      // }
         object = await storage.getObjectAsBuffer(process.env.S3_BUCKET, job.payload.processingPath)
         //updateProgress(mediaDoc._id, 0.2)
     } catch(e) {
@@ -37,16 +64,43 @@ export async function imageEncoder(job, mediaDoc) {
     
     // edge case for heic
     if(job.payload.mimetype == "image/heic") {
-        encoderQueue.ping(job.ack);
+      // try {
+      //   await encoderQueue.ping(job.ack);
+      // } catch(e) {
+      //   console.error(e);
+      //   return;
+      // }
         object =  await encodeHEIC(job,mediaDoc,object);
         //updateProgress(mediaDoc._id, 0.3)
     } 
 
     //encode blurhash
-    encoderQueue.ping(job.ack);
-    waiton.push(encodeImageToBlurhash(mediaDoc, object));
-    waiton.push(createThumbnail(mediaDoc, object));
-    waiton.push(encodeWebp(mediaDoc, object))
+    
+    // try {
+    //   await encoderQueue.ping(job.ack, { visibility: 120 });
+    // } catch(e) {
+    //   console.error(e);
+    //   return;
+    // }
+    if(!mediaDoc?.blurhash) {
+      waiton.push(encodeImageToBlurhash(mediaDoc, object));
+    } else {
+      console.log("Skip Create Blurhash")
+    }
+    if(!mediaDoc?.files?.thumbnail) {
+      waiton.push(createThumbnail(mediaDoc, object));
+    }else {
+      console.log("Skip Create Thumbnail")
+    }
+    //console.log(mediaDoc.files.display)
+    if(!mediaDoc?.files?.display || mediaDoc.files.display.length == 0) {
+      waiton.push(encodeWebp(mediaDoc, object))
+    } else {
+      console.log("Skip Encode Webp")
+    }
+    //waiton.push(encodeImageToBlurhash(mediaDoc, object));
+    
+    
 
     //create thumbnail
     // try {
@@ -64,11 +118,13 @@ export async function imageEncoder(job, mediaDoc) {
             progress: 1,
             finished: Date.now()
         }}});
+        clearInterval(pingInterval);
         await encoderQueue.ack(job.ack);
     } catch(e) {
         console.log(e);
         await setError(e);
     }
+    console.log("Image: " + mediaDoc._id + " took "+(Date.now() - epoch)+"ms to complete")
     return true;
     /*else if(job.payload.mimetype == "image/webp") { //just upload it no processing
 
@@ -79,7 +135,6 @@ export async function imageEncoder(job, mediaDoc) {
 
 
 async function encodeHEIC(job,mediaDoc,rawFile) {
-    //console.log("NOT IMPLEMENTED")
     const buffer = await heicConvert({buffer: rawFile, format: "PNG"})
     job.payload.mimetype = "image/png"
     return buffer;

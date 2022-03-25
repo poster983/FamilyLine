@@ -48,6 +48,7 @@ const verifyIDs = (req,res,next) => {
     if(req.file == null) {
       return next(error("Multipart file upload required", 400))
     }
+    console.log(req.file)
     try { 
       const status = await uploadObject(req.file, req.params.groupID)
       fsP.unlink(req.file.path);

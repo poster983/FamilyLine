@@ -83,6 +83,10 @@ class AppScaffold extends StatelessWidget {
         widget: const AdaptiveScaffoldDestination(
             title: 'Gallery', icon: Icons.photo_size_select_actual_rounded),
         nav: "/group/622e80202d9894fe032c4eac"),
+    _NavItem(
+        widget: const AdaptiveScaffoldDestination(
+            title: 'MacOS Test', icon: Icons.computer),
+        nav: "/macos"),
   ];
 
   @override
@@ -123,10 +127,11 @@ class AppScaffold extends StatelessWidget {
                 return;
               }
               for (var element in files.files) {
-                if(element.readStream == null) {
-                  continue;
-                }
-                appState.uploader.queueUpload(filename: element.name, fileStream: element.readStream!);
+                // if(element.readStream == null) {
+                //   continue;
+                // }
+                //element.
+                appState.uploader.queueUpload(element);
               }},
           ),
           fabInRail: true,

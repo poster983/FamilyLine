@@ -3,6 +3,7 @@ import 'package:client/controllers/GalleryState.dart';
 import 'package:client/pages/ErrorPage.dart';
 import 'package:client/pages/GalleryPage.dart';
 import 'package:client/pages/LoginPage.dart';
+import 'package:client/pages/MacOSTestPage.dart';
 import 'package:client/pages/MediaPage.dart';
 import 'package:client/widgets/AppScaffold.dart';
 import 'package:client/widgets/CupertinoFullscreenModal.dart';
@@ -73,6 +74,10 @@ class MyApp extends StatelessWidget {
         path: '/login',
         builder: (context, state) => const LoginPage(),
       ),
+      GoRoute(
+        path: "/macos",
+        builder: (context, state) => MacOSTestPage(),
+      )
     ],
     initialLocation: '/',
     errorBuilder: (context, state) => ErrorPage(error: state.error,),

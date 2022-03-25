@@ -48,7 +48,7 @@ Future<FilePickerResult?> showUploadUI(BuildContext context) async {
                 result = await FilePicker.platform.pickFiles(
                     type: FileType.media,
                     allowMultiple: true, 
-                    allowCompression: false, 
+                    allowCompression: true, 
                     withData: false,
                     withReadStream: true,
 

@@ -207,6 +207,7 @@ export async function uploadObject(fileinfo, groupID) {
     throw e;
   }
 
+  
   //generate blurhash
   // let blurhash = null;
   // if(filetype == mediaTypes.Image) {
