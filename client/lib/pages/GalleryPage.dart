@@ -36,7 +36,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
   bool loaded = false;
   String ? accessToken;
 
-  List < UniqueKey > thumbnailKeys = [];
+  List < ObjectKey > thumbnailKeys = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -63,12 +63,14 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
         return;
       }
 
-      Map < String, dynamic > data = await listMedia(groupID: widget.groupID, page: page + 1, filter: {
+      Map < String, dynamic > data = await listMedia(limit: (loaded)?20:50, groupID: widget.groupID, page: page + 1, filter: {
         'blurhash': {
           '\$exists': true
         }
+      }, sort: {
+        'sortDate': -1
       });
-      thumbnailKeys.addAll(List < UniqueKey > .generate(data['docs'].length, (index) => UniqueKey()));
+      thumbnailKeys.addAll(List < ObjectKey > .generate(data['docs'].length, (index) => ObjectKey(data['docs'][index])));
       loadLock = false;
       accessToken = await refreshAndGetAccessToken();
       //print(data['docs'][0]['blurhash']); 
@@ -118,23 +120,50 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
     // }
 
     String url = settings.get('server', defaultValue: "") + "/apiv1/group/" + items[index]["groupID"] + "/media/thumbnail/" + items[index]["_id"];
+    String fullQualityUrl = settings.get('server', defaultValue: "") + "/apiv1/group/" + items[index]["groupID"] + "/media/display/" + items[index]["_id"]+"/"+items[index]["files"]["display"][0]["versionID"];
+    Widget blurhashPreview = BlurHash(key: ValueKey("blurhash:"+items[index]['blurhash']), hash: items[index]['blurhash']);
     //var imageKey = ValueKey('penis');
     //print(url);
     return CupertinoContextMenu(
-      // previewBuilder: (BuildContext context, Animation<double> animation, Widget child) {
-      //     //String url = settings.get('server', defaultValue: "") + "/apiv1/group/" + items[index]["groupID"] + "/media/display/" + items[index]["_id"];
-      //     return FittedBox(
-      //       fit: BoxFit.cover,
-      //       // This ClipRRect rounds the corners of the image when the
-      //       // CupertinoContextMenu is open, even though it's not rounded when
-      //       // it's closed. It uses the given animation to animate the corners
-      //       // in sync with the opening animation.
-      //       child: ClipRRect(
-      //         borderRadius: BorderRadius.circular(64.0 * animation.value),
-      //         child: child,
-      //       ),
-      //     );
-      //   },
+      previewBuilder: (BuildContext context, Animation<double> animation, Widget child) {
+          
+          //print("Load full image for preview");
+          Widget childWidget = blurhashPreview;
+          if(animation.isCompleted) {
+            print("animation Done");
+            childWidget = (valid) ? PlatformImage(
+
+                width: double.infinity,
+                fit: BoxFit.cover,
+                headers: {
+                  "Authorization": "Bearer " + accessToken!
+                },
+                url: fullQualityUrl,
+                placeholder: (context, url) => blurhashPreview,
+                errorWidget: (context, url, error) => errorLoading(context, index),
+              ) : errorLoading(context, index);
+          }
+          return ClipRRect(
+              borderRadius: BorderRadius.circular(64.0 * animation.value),
+            //   FittedBox(
+            // fit: BoxFit.cover,
+            // // This ClipRRect rounds the corners of the image when the
+            // // CupertinoContextMenu is open, even though it's not rounded when
+            // // it's closed. It uses the given animation to animate the corners
+            // // in sync with the opening animation.
+            
+            // child:
+            // width: double.infinity,
+            // alignment: Alignment.center,
+            // decoration: const BoxDecoration(
+            //     color: Colors.grey,
+            //   ),
+              child: childWidget
+          );
+            
+            
+          
+        },
       actions: < Widget > [
         CupertinoContextMenuAction(
           isDefaultAction: true,
@@ -195,14 +224,14 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
                 color: Colors.grey,
               ),
               child: (valid) ? PlatformImage(
-
+                //key: UniqueKey(),
                 width: double.infinity,
                 fit: BoxFit.cover,
                 headers: {
                   "Authorization": "Bearer " + accessToken!
                 },
                 url: url,
-                placeholder: (context, url) => BlurHash(hash: items[index]['blurhash']),
+                placeholder: (context, url) => blurhashPreview,
                 errorWidget: (context, url, error) => errorLoading(context, index),
               ) : errorLoading(context, index),
           ),
@@ -223,7 +252,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
 
   Widget photoGrid(BuildContext context) {
     return GridView.builder(
-      cacheExtent: MediaQuery.of(context).size.height*5,
+      cacheExtent: MediaQuery.of(context).size.height*8,
       controller: controller,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: ((MediaQuery.of(context).size.width > 600) ? 200 * (pow(galleryState.mainGridZoom.value, 1.5) * 2) : 400 * (pow(galleryState.mainGridZoom.value, 1.5) * 0.9)),
@@ -327,8 +356,8 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
 
   void _scrollListener() {
     if (!loadLock && controller.hasClients) { // (!hasNextPage || totalPages >= page)
-      // print(controller.position.extentAfter);
-      if (controller.position.extentAfter < 500) {
+    print(controller.position.extentInside);
+      if (controller.position.extentAfter < 1000) {
         print("will fetch more");
 
         //items.addAll(List.generate(42, (index) => 'Inserted $index'));

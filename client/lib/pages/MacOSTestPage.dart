@@ -37,7 +37,7 @@ class _MacOSTestPageState extends State < MacOSTestPage > {
       child: MacosWindow(
         backgroundColor: const Color(0x00121212),
           child: MacosScaffold(
-            titleBar: TitleBar(leading: MacosBackButton(onPressed: ()=> context.pop(),),title: Text("Hello World!"),),
+            titleBar: TitleBar(  leading: MacosBackButton(onPressed: ()=> context.pop(),),title: Text("Hello World!"),),
             children: [ContentArea(builder: ((context, scrollController) {
             return Text("Hello World!");
           }))]),

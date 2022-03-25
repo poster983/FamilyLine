@@ -21,7 +21,7 @@ class PlatformImage extends StatefulWidget {
   State < PlatformImage > createState() => _PlatformImageState();
 }
 
-class _PlatformImageState extends State < PlatformImage > { // with AutomaticKeepAliveClientMixin
+class _PlatformImageState extends State < PlatformImage > { // with AutomaticKeepAliveClientMixin { // 
   // @override
   // bool get wantKeepAlive => false;  //TODO: This may induse memory issues later with lots of images.  Need a better way to lazy load images
 

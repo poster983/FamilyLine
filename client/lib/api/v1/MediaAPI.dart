@@ -14,18 +14,25 @@ var settings = Hive.box('settings');
 ///page - the page to find 
 ///
 ///filter - the mongodb syntax to filter by
-Future<Map<String, dynamic>> listMedia({required String groupID, int page=1, Map<String, dynamic>? filter}) async {
+///
+///sort - the mongodb syntax to sort by
+Future<Map<String, dynamic>> listMedia({required String groupID, int page=1, int limit=10, Map<String, dynamic>? filter, Map<String, dynamic>? sort}) async {
   String serverUrl = settings.get('server', defaultValue: "http://localhost:3000");
   String accessToken = await refreshAndGetAccessToken();
 
   Map<String, dynamic> queryMap = {
-    'page': page
+    'page': page,
+    'limit': limit
   };
 
   
   if(filter!= null) {
     queryMap['filter'] = json.encode(filter);
     
+  }
+  if(sort!= null) {
+    queryMap['sort'] = json.encode(sort);
+        
   }
   
   Uri url = Uri.parse(serverUrl+"/apiv1/group/" + groupID + "/media?" + queryFromMap(queryMap));
