@@ -43,15 +43,24 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
 
   @override
   void initState() {
+    //getMedia();
     getMedia();
     super.initState();
     controller = ScrollController()..addListener(_scrollListener);
+    
   }
 
   @override
   void dispose() {
     controller.removeListener(_scrollListener);
     super.dispose();
+  }
+
+  void fillAllSpaceLoad() {
+    //print(controller.position.extentAfter);
+    while(controller.position.extentAfter == 0 && totalPages != page) {
+      getMedia();
+    }
   }
 
   void getMedia() async {
@@ -63,7 +72,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
         return;
       }
 
-      Map < String, dynamic > data = await listMedia(limit: (loaded)?20:50, groupID: widget.groupID, page: page + 1, filter: {
+      Map < String, dynamic > data = await listMedia(limit: 20, groupID: widget.groupID, page: page + 1, filter: {
         'blurhash': {
           '\$exists': true
         }
@@ -71,7 +80,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
         'sortDate': -1
       });
       thumbnailKeys.addAll(List < ObjectKey > .generate(data['docs'].length, (index) => ObjectKey(data['docs'][index])));
-      loadLock = false;
+      
       accessToken = await refreshAndGetAccessToken();
       //print(data['docs'][0]['blurhash']); 
       //print(jsonDecode(data['docs']));
@@ -81,6 +90,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
       });
       page = data['page'];
       totalPages = data['totalPages'];
+      loadLock = false;
     } catch (e) {
       print("getMedia Gallery Page Error");
       print(e);
@@ -88,7 +98,9 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
 
   }
 
-  Widget errorLoading(BuildContext context, int index) {
+  Widget errorLoading(BuildContext context, int index, {Error? error}) {
+    print("error from error widget");
+    print(error);
     return Stack(
       alignment: AlignmentDirectional.center,
       children: [
@@ -130,6 +142,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
           //print("Load full image for preview");
           Widget childWidget = blurhashPreview;
           if(animation.isCompleted) {
+            HapticFeedback.heavyImpact();
             print("animation Done");
             childWidget = (valid) ? PlatformImage(
 
@@ -140,11 +153,11 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
                 },
                 url: fullQualityUrl,
                 placeholder: (context, url) => blurhashPreview,
-                errorWidget: (context, url, error) => errorLoading(context, index),
+                errorWidget: (context, url, error) => errorLoading(context, index, error: error),
               ) : errorLoading(context, index);
           }
           return ClipRRect(
-              borderRadius: BorderRadius.circular(64.0 * animation.value),
+              borderRadius: BorderRadius.circular(32.0 * animation.value),
             //   FittedBox(
             // fit: BoxFit.cover,
             // // This ClipRRect rounds the corners of the image when the
@@ -216,7 +229,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
         // },
         child: ClipRRect(
 
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(galleryState.mainGridZoom.value * 8.0),
           child: Container(
             width: double.infinity,
             alignment: Alignment.center,
@@ -231,7 +244,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
                   "Authorization": "Bearer " + accessToken!
                 },
                 url: url,
-                placeholder: (context, url) => blurhashPreview,
+                //placeholder: (context, url) => blurhashPreview,
                 errorWidget: (context, url, error) => errorLoading(context, index),
               ) : errorLoading(context, index),
           ),
@@ -251,17 +264,28 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
                     */
 
   Widget photoGrid(BuildContext context) {
-    return GridView.builder(
+    if(totalPages != page && !loadLock){
+      WidgetsBinding.instance!.addPostFrameCallback((_){
+        if(controller.position.extentAfter == 0) {
+          getMedia();
+        }
+        
+      });
+    }
+    return Scrollbar(
+      controller: controller,
+      child: GridView.builder(
       cacheExtent: MediaQuery.of(context).size.height*8,
       controller: controller,
+      physics: const BouncingScrollPhysics(),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: ((MediaQuery.of(context).size.width > 600) ? 200 * (pow(galleryState.mainGridZoom.value, 1.5) * 2) : 400 * (pow(galleryState.mainGridZoom.value, 1.5) * 0.9)),
+        maxCrossAxisExtent: ((MediaQuery.of(context).size.width > 800) ? 500 * (pow(_remapZoom(galleryState.mainGridZoom.value, 0.1,1,0.23,1), 2) * 0.7) : 500 * (pow(_remapZoom(galleryState.mainGridZoom.value, 0.1,1,0.5,1), 4) * 1)),
         childAspectRatio: 1,
-        crossAxisSpacing: 5,
-        mainAxisSpacing: 5),
+        crossAxisSpacing: 0, //galleryState.mainGridZoom.value *5,
+        mainAxisSpacing: 0, ),//galleryState.mainGridZoom.value *5),
       itemCount: items.length,
       itemBuilder: thumbnail
-
+      )
     );
   }
 
@@ -353,10 +377,13 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
     //   }),
     // );
   }
-
+    double _remapZoom (double value, double from1, double to1, double from2, double to2) {
+      return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
+  }
   void _scrollListener() {
     if (!loadLock && controller.hasClients) { // (!hasNextPage || totalPages >= page)
-    print(controller.position.extentInside);
+
+    //print(controller.position.extentInside);
       if (controller.position.extentAfter < 1000) {
         print("will fetch more");
 

@@ -63,21 +63,29 @@ class _PlatformImageState extends State < PlatformImage > { // with AutomaticKee
     );
   }
 
-  Widget cachedImage() {
-    return CachedNetworkImage(
-        httpHeaders: widget.headers,
-        imageUrl: webURL ?? widget.url ?? "http://0.0.0.0",
-        placeholder: widget.placeholder,
-        errorWidget: widget.errorWidget,
-        fit: widget.fit,
-        width: widget.width,
-        height: widget.height,
-        imageBuilder: (context, imageProvider) {
-          return Container(decoration: BoxDecoration(image: DecorationImage(image: imageProvider,
-               fit: widget.fit,
-           )));
-        }
-    );
+  Widget cachedImage(BuildContext context) {
+    late Widget returner;
+    try{ 
+    returner = CachedNetworkImage(
+          httpHeaders: widget.headers,
+          imageUrl: webURL ?? widget.url ?? "http://0.0.0.0",
+          placeholder: widget.placeholder,
+          errorWidget: widget.errorWidget,
+          fit: widget.fit,
+          width: widget.width,
+          height: widget.height,
+          imageBuilder: (context, imageProvider) {
+            return Container(decoration: BoxDecoration(image: DecorationImage(image: imageProvider,
+                fit: widget.fit,
+            )));
+          }
+      );
+    } catch(e) {
+      if(widget.errorWidget != null) {
+        returner = widget.errorWidget!(context, webURL ?? widget.url ?? "http://0.0.0.0", e);
+      }
+    }
+    return returner;
   }
 
   @override
@@ -94,7 +102,7 @@ class _PlatformImageState extends State < PlatformImage > { // with AutomaticKee
     if(kIsWeb) {
       loadImageOnWeb(widget.url!);
       if(webURL != null ) {
-        return cachedImage();
+        return cachedImage(context);
       } else {
         if(widget.placeholder != null) {
           return widget.placeholder!(context, widget.url??"http://0.0.0.0");
@@ -103,7 +111,7 @@ class _PlatformImageState extends State < PlatformImage > { // with AutomaticKee
         }
       }
     } else {
-      return cachedImage();
+      return cachedImage(context);
     }
     
   }
