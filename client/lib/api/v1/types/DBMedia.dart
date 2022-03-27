@@ -31,7 +31,7 @@ class DBMedia {
       required this.files,
         this.isarID,
        required this.mongoID,
-       required this.groupId,
+       required this.groupID,
        required this.type,
        required this.uploaded,
        required this.lastModified,
@@ -41,8 +41,16 @@ class DBMedia {
 
     @Id()
     int? isarID;
-
+    @JsonKey(name: "_id")
     String mongoID;
+
+
+    // String? get id => mongoID;
+    // set id(String? val) {
+    //   mongoID = val;
+    // }
+
+    
 
      @_DBMediaEncodingConverter()
      DBMediaEncoding? encoding;
@@ -53,7 +61,7 @@ class DBMedia {
     @_DBMediaFilesConverter()
     DBMediaFiles files;
 
-    String groupId;
+    String groupID;
     String type;
     DateTime uploaded;
     DateTime lastModified;
@@ -73,7 +81,7 @@ class DBMediaEncoding {
         this.finished,
     });
 
-    int progress;
+    double progress;
     DateTime? started;
     DateTime? finished;
 
@@ -130,12 +138,12 @@ class DBMediaFilesDisplay {
     DBMediaFilesDisplay({
       required  this.size,
       required  this.mimetype,
-      required  this.versionId,
+      required  this.versionID,
     });
 
     int size;
     String mimetype;
-    String versionId;
+    String versionID;
 
     factory DBMediaFilesDisplay.fromJson(Map<String, dynamic> json) => _$DBMediaFilesDisplayFromJson(json);
     Map<String, dynamic> toJson() => _$DBMediaFilesDisplayToJson(this);

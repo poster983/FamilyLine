@@ -17,7 +17,7 @@ extension GetDBMediaCollection on Isar {
 final DBMediaSchema = CollectionSchema(
   name: 'DBMedia',
   schema:
-      '{"name":"DBMedia","idName":"isarID","properties":[{"name":"blurhash","type":"String"},{"name":"encoding","type":"String"},{"name":"files","type":"String"},{"name":"groupId","type":"String"},{"name":"lastModified","type":"Long"},{"name":"metadata","type":"String"},{"name":"mongoID","type":"String"},{"name":"sortDate","type":"Long"},{"name":"type","type":"String"},{"name":"uploaded","type":"Long"}],"indexes":[],"links":[]}',
+      '{"name":"DBMedia","idName":"isarID","properties":[{"name":"blurhash","type":"String"},{"name":"encoding","type":"String"},{"name":"files","type":"String"},{"name":"groupID","type":"String"},{"name":"lastModified","type":"Long"},{"name":"metadata","type":"String"},{"name":"mongoID","type":"String"},{"name":"sortDate","type":"Long"},{"name":"type","type":"String"},{"name":"uploaded","type":"Long"}],"indexes":[],"links":[]}',
   nativeAdapter: const _DBMediaNativeAdapter(),
   webAdapter: const _DBMediaWebAdapter(),
   idName: 'isarID',
@@ -25,7 +25,7 @@ final DBMediaSchema = CollectionSchema(
     'blurhash': 0,
     'encoding': 1,
     'files': 2,
-    'groupId': 3,
+    'groupID': 3,
     'lastModified': 4,
     'metadata': 5,
     'mongoID': 6,
@@ -66,7 +66,7 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
         _dBMedia_DBMediaEncodingConverter.toIsar(object.encoding));
     IsarNative.jsObjectSet(
         jsObj, 'files', _dBMedia_DBMediaFilesConverter.toIsar(object.files));
-    IsarNative.jsObjectSet(jsObj, 'groupId', object.groupId);
+    IsarNative.jsObjectSet(jsObj, 'groupID', object.groupID);
     IsarNative.jsObjectSet(jsObj, 'isarID', object.isarID);
     IsarNative.jsObjectSet(jsObj, 'lastModified',
         object.lastModified.toUtc().millisecondsSinceEpoch);
@@ -87,7 +87,7 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
       blurhash: IsarNative.jsObjectGet(jsObj, 'blurhash'),
       files: _dBMedia_DBMediaFilesConverter
           .fromIsar(IsarNative.jsObjectGet(jsObj, 'files') ?? ''),
-      groupId: IsarNative.jsObjectGet(jsObj, 'groupId') ?? '',
+      groupID: IsarNative.jsObjectGet(jsObj, 'groupID') ?? '',
       isarID: IsarNative.jsObjectGet(jsObj, 'isarID'),
       lastModified: IsarNative.jsObjectGet(jsObj, 'lastModified') != null
           ? DateTime.fromMillisecondsSinceEpoch(
@@ -128,8 +128,8 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
       case 'files':
         return (_dBMedia_DBMediaFilesConverter
             .fromIsar(IsarNative.jsObjectGet(jsObj, 'files') ?? '')) as P;
-      case 'groupId':
-        return (IsarNative.jsObjectGet(jsObj, 'groupId') ?? '') as P;
+      case 'groupID':
+        return (IsarNative.jsObjectGet(jsObj, 'groupID') ?? '') as P;
       case 'isarID':
         return (IsarNative.jsObjectGet(jsObj, 'isarID')) as P;
       case 'lastModified':
@@ -188,9 +188,9 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
     final value2 = _dBMedia_DBMediaFilesConverter.toIsar(object.files);
     final _files = IsarBinaryWriter.utf8Encoder.convert(value2);
     dynamicSize += (_files.length) as int;
-    final value3 = object.groupId;
-    final _groupId = IsarBinaryWriter.utf8Encoder.convert(value3);
-    dynamicSize += (_groupId.length) as int;
+    final value3 = object.groupID;
+    final _groupID = IsarBinaryWriter.utf8Encoder.convert(value3);
+    dynamicSize += (_groupID.length) as int;
     final value4 = object.lastModified;
     final _lastModified = value4;
     final value5 = _dBMedia_DBMediaMetadataConverter.toIsar(object.metadata);
@@ -215,7 +215,7 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
     writer.writeBytes(offsets[0], _blurhash);
     writer.writeBytes(offsets[1], _encoding);
     writer.writeBytes(offsets[2], _files);
-    writer.writeBytes(offsets[3], _groupId);
+    writer.writeBytes(offsets[3], _groupID);
     writer.writeDateTime(offsets[4], _lastModified);
     writer.writeBytes(offsets[5], _metadata);
     writer.writeBytes(offsets[6], _mongoID);
@@ -231,7 +231,7 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
       blurhash: reader.readStringOrNull(offsets[0]),
       files: _dBMedia_DBMediaFilesConverter
           .fromIsar(reader.readString(offsets[2])),
-      groupId: reader.readString(offsets[3]),
+      groupID: reader.readString(offsets[3]),
       isarID: id,
       lastModified: reader.readDateTime(offsets[4]),
       metadata: _dBMedia_DBMediaMetadataConverter
@@ -683,19 +683,19 @@ extension DBMediaQueryFilter
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdEqualTo(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.eq,
-      property: 'groupId',
+      property: 'groupID',
       value: value,
       caseSensitive: caseSensitive,
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdGreaterThan(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDGreaterThan(
     String value, {
     bool caseSensitive = true,
     bool include = false,
@@ -703,13 +703,13 @@ extension DBMediaQueryFilter
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.gt,
       include: include,
-      property: 'groupId',
+      property: 'groupID',
       value: value,
       caseSensitive: caseSensitive,
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdLessThan(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDLessThan(
     String value, {
     bool caseSensitive = true,
     bool include = false,
@@ -717,13 +717,13 @@ extension DBMediaQueryFilter
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.lt,
       include: include,
-      property: 'groupId',
+      property: 'groupID',
       value: value,
       caseSensitive: caseSensitive,
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdBetween(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDBetween(
     String lower,
     String upper, {
     bool caseSensitive = true,
@@ -731,7 +731,7 @@ extension DBMediaQueryFilter
     bool includeUpper = true,
   }) {
     return addFilterConditionInternal(FilterCondition.between(
-      property: 'groupId',
+      property: 'groupID',
       lower: lower,
       includeLower: includeLower,
       upper: upper,
@@ -740,47 +740,47 @@ extension DBMediaQueryFilter
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdStartsWith(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.startsWith,
-      property: 'groupId',
+      property: 'groupID',
       value: value,
       caseSensitive: caseSensitive,
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdEndsWith(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.endsWith,
-      property: 'groupId',
+      property: 'groupID',
       value: value,
       caseSensitive: caseSensitive,
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdContains(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDContains(
       String value,
       {bool caseSensitive = true}) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.contains,
-      property: 'groupId',
+      property: 'groupID',
       value: value,
       caseSensitive: caseSensitive,
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIdMatches(
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> groupIDMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return addFilterConditionInternal(FilterCondition(
       type: ConditionType.matches,
-      property: 'groupId',
+      property: 'groupID',
       value: pattern,
       caseSensitive: caseSensitive,
     ));
@@ -1324,12 +1324,12 @@ extension DBMediaQueryWhereSortBy on QueryBuilder<DBMedia, DBMedia, QSortBy> {
     return addSortByInternal('files', Sort.desc);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByGroupId() {
-    return addSortByInternal('groupId', Sort.asc);
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByGroupID() {
+    return addSortByInternal('groupID', Sort.asc);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByGroupIdDesc() {
-    return addSortByInternal('groupId', Sort.desc);
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByGroupIDDesc() {
+    return addSortByInternal('groupID', Sort.desc);
   }
 
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByIsarID() {
@@ -1415,12 +1415,12 @@ extension DBMediaQueryWhereSortThenBy
     return addSortByInternal('files', Sort.desc);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByGroupId() {
-    return addSortByInternal('groupId', Sort.asc);
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByGroupID() {
+    return addSortByInternal('groupID', Sort.asc);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByGroupIdDesc() {
-    return addSortByInternal('groupId', Sort.desc);
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByGroupIDDesc() {
+    return addSortByInternal('groupID', Sort.desc);
   }
 
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByIsarID() {
@@ -1497,9 +1497,9 @@ extension DBMediaQueryWhereDistinct
     return addDistinctByInternal('files', caseSensitive: caseSensitive);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByGroupId(
+  QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByGroupID(
       {bool caseSensitive = true}) {
-    return addDistinctByInternal('groupId', caseSensitive: caseSensitive);
+    return addDistinctByInternal('groupID', caseSensitive: caseSensitive);
   }
 
   QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByIsarID() {
@@ -1548,8 +1548,8 @@ extension DBMediaQueryProperty
     return addPropertyNameInternal('files');
   }
 
-  QueryBuilder<DBMedia, String, QQueryOperations> groupIdProperty() {
-    return addPropertyNameInternal('groupId');
+  QueryBuilder<DBMedia, String, QQueryOperations> groupIDProperty() {
+    return addPropertyNameInternal('groupID');
   }
 
   QueryBuilder<DBMedia, int?, QQueryOperations> isarIDProperty() {
@@ -1590,8 +1590,8 @@ DBMedia _$DBMediaFromJson(Map<String, dynamic> json) => DBMedia(
           DBMediaMetadata.fromJson(json['metadata'] as Map<String, dynamic>),
       files: DBMediaFiles.fromJson(json['files'] as Map<String, dynamic>),
       isarID: json['isarID'] as int?,
-      mongoID: json['mongoID'] as String,
-      groupId: json['groupId'] as String,
+      mongoID: json['_id'] as String,
+      groupID: json['groupID'] as String,
       type: json['type'] as String,
       uploaded: DateTime.parse(json['uploaded'] as String),
       lastModified: DateTime.parse(json['lastModified'] as String),
@@ -1603,11 +1603,11 @@ DBMedia _$DBMediaFromJson(Map<String, dynamic> json) => DBMedia(
 
 Map<String, dynamic> _$DBMediaToJson(DBMedia instance) => <String, dynamic>{
       'isarID': instance.isarID,
-      'mongoID': instance.mongoID,
+      '_id': instance.mongoID,
       'encoding': instance.encoding,
       'metadata': instance.metadata,
       'files': instance.files,
-      'groupId': instance.groupId,
+      'groupID': instance.groupID,
       'type': instance.type,
       'uploaded': instance.uploaded.toIso8601String(),
       'lastModified': instance.lastModified.toIso8601String(),
@@ -1617,7 +1617,7 @@ Map<String, dynamic> _$DBMediaToJson(DBMedia instance) => <String, dynamic>{
 
 DBMediaEncoding _$DBMediaEncodingFromJson(Map<String, dynamic> json) =>
     DBMediaEncoding(
-      progress: json['progress'] as int,
+      progress: (json['progress'] as num).toDouble(),
       started: json['started'] == null
           ? null
           : DateTime.parse(json['started'] as String),
@@ -1653,7 +1653,7 @@ DBMediaFilesDisplay _$DBMediaFilesDisplayFromJson(Map<String, dynamic> json) =>
     DBMediaFilesDisplay(
       size: json['size'] as int,
       mimetype: json['mimetype'] as String,
-      versionId: json['versionId'] as String,
+      versionID: json['versionID'] as String,
     );
 
 Map<String, dynamic> _$DBMediaFilesDisplayToJson(
@@ -1661,7 +1661,7 @@ Map<String, dynamic> _$DBMediaFilesDisplayToJson(
     <String, dynamic>{
       'size': instance.size,
       'mimetype': instance.mimetype,
-      'versionId': instance.versionId,
+      'versionID': instance.versionID,
     };
 
 DBMediaFilesThumbnail _$DBMediaFilesThumbnailFromJson(

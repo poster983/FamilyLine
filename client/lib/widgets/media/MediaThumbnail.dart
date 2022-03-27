@@ -1,4 +1,4 @@
-import 'package:client/types/DBMedia.dart';
+
 import 'package:client/widgets/PlatformImage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+
+import '../../api/v1/types/DBMedia.dart';
 
 class MediaThumbnail extends StatefulWidget {
   const MediaThumbnail({ Key? key, required this.media, required this.accessToken}) : super(key: key);
@@ -48,9 +50,10 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
     // if(thumbnailKeys[index] == null) {
     //   thumbnailKeys[index] = GlobalKey();
     // }
-
-    String url = settings.get('server', defaultValue: "") + "/apiv1/group/" + widget.media.groupId + "/media/thumbnail/" + widget.media.mongoID;
-    String fullQualityUrl = settings.get('server', defaultValue: "") + "/apiv1/group/" + widget.media.groupId + "/media/display/" + widget.media.mongoID+"/"+widget.media.files.display?[0].versionId;
+    //var media = widget.media;
+    //print(widget.media.mongoID);
+    String url = settings.get('server', defaultValue: "") + "/apiv1/group/" + widget.media.groupID + "/media/thumbnail/" + widget.media.mongoID;
+    String fullQualityUrl = settings.get('server', defaultValue: "") + "/apiv1/group/" + widget.media.groupID + "/media/display/" + widget.media.mongoID+"/"+widget.media.files.display?[0].versionID;
     Widget blurhashPreview = (widget.media.blurhash!=null)?BlurHash(key: ValueKey("blurhash:"+widget.media.blurhash!), hash: widget.media.blurhash!):const CircularProgressIndicator.adaptive();
     //var imageKey = ValueKey('penis');
     //print(url);
@@ -126,7 +129,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
         onTapUp: (_) {
           if (cancelClick == false) {
             print("go to media");
-            context.go("/group/" + widget.media.groupId + "/media/" + widget.media.mongoID, extra: widget.media);
+            context.go("/group/" + widget.media.groupID + "/media/" + widget.media.mongoID, extra: widget.media);
           }
         },
         onTapCancel: () {
@@ -160,7 +163,7 @@ class _MediaThumbnailState extends State<MediaThumbnail> {
                 },
                 url: url,
                 //placeholder: (context, url) => blurhashPreview,
-                errorWidget: (context, url, error) => errorLoading(context),
+                errorWidget: (context, url, error) => errorLoading(context, error: error),
               ) : errorLoading(context),
           ),
         )
