@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:client/api/v1/AuthAPI.dart';
 import 'package:client/api/v1/MediaAPI.dart';
+import 'package:client/api/v1/types/DBMedia.dart';
 import 'package:client/widgets/CupertinoFullscreenModal.dart';
 import 'package:client/widgets/PlatformImage.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,7 +16,7 @@ var settings = Hive.box('settings');
 class MediaPage extends StatefulWidget {
   final String mediaID;
   final String groupID;
-  final Map < String, dynamic > ? mediaDoc;
+  final DBMedia? mediaDoc;
   const MediaPage({
     Key ? key,
     required this.groupID,
@@ -28,11 +29,10 @@ class MediaPage extends StatefulWidget {
 }
 
 class _MediaPageState extends State < MediaPage > {
-  Map < String,
-  dynamic > ? mediaDoc;
+  DBMedia? mediaDoc;
 
-  String ? errorMessage;
-  String ? accessToken;
+  String? errorMessage;
+  String? accessToken;
 
   //var imageKey = UniqueKey();
   @override
@@ -76,7 +76,7 @@ class _MediaPageState extends State < MediaPage > {
 
   ///Display an error on the page
   Widget errorWidget(BuildContext context, String ? message) {
-    String ? blurhash = mediaDoc ? ['blurhash'];
+    String? blurhash = mediaDoc?.blurhash;
     if (blurhash != null) {
       return Stack(
         alignment: AlignmentDirectional.center,
@@ -103,13 +103,13 @@ class _MediaPageState extends State < MediaPage > {
 
 
   Widget image(BuildContext context) {
-    String ? versionID = mediaDoc ? ['files'] ? ['display'] ? [0] ? ['versionID'];
+    String? versionID = mediaDoc!.files.display?[0].versionID;
     if (versionID == null) {
       return errorWidget(context, "The file may not be processed yet or does not exist. Please try again later");
     }
-    String url = settings.get("server", defaultValue: "") + "/apiv1/group/" + widget.groupID + "/media/display/" + mediaDoc!["_id"] + "/" + versionID;
+    String url = settings.get("server", defaultValue: "") + "/apiv1/group/" + widget.groupID + "/media/display/" + mediaDoc!.mongoID + "/" + versionID;
     //String url = settings.get("server", defaultValue: "") + "/apiv1/group/"+widget.groupID+"/media/original/"+mediaDoc!["_id"];
-    String ? blurhash = mediaDoc ? ['blurhash'];
+    String ? blurhash = mediaDoc!.blurhash;
     return InteractiveViewer(
       boundaryMargin: EdgeInsets.all(56+MediaQuery.of(context).padding.top + ((MediaQuery.of(context).size.width < 600) ? 8 : 0)),
       minScale: 0.9,
@@ -150,7 +150,7 @@ class _MediaPageState extends State < MediaPage > {
       mediaWidget =
         const Center(child: CircularProgressIndicator.adaptive());
     } else {
-      if (mediaDoc!['type'] == "IMAGE") {
+      if (mediaDoc!.type == "IMAGE") {
         mediaWidget = image(context);
       } else {
         throw UnimplementedError("Only implemented images");
@@ -162,7 +162,7 @@ class _MediaPageState extends State < MediaPage > {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: BlurredAppBar(
-        title: mediaDoc ? ['metadata'] ? ['filename'], // change to title later
+        title: mediaDoc?.metadata.filename, // change to title later
       ),
       // appBar: AppBar(
       //   elevation: 0,

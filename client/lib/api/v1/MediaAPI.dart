@@ -101,19 +101,30 @@ Future<APIPagination<DBMedia>> listMediaFromServer({required String groupID, int
 }
 
 
-/// Gets a single media object by its ID
-Future<Map<String, dynamic>> getMediaByID({required String groupID, required String mediaID}) async {
+/// Gets a single media object by its ID From server and then from cache if offline
+Future<DBMedia> getMediaByID({required String groupID, required String mediaID}) async {
+  return getMediaByIDFromServer(groupID: groupID, mediaID: mediaID);
+}
+
+///Gets Media from server by ID
+Future<DBMedia> getMediaByIDFromServer({required String groupID, required String mediaID}) async {
   String serverUrl = settings.get('server', defaultValue: "http://localhost:3000");
   String accessToken = await refreshAndGetAccessToken();
 
   Uri url = Uri.parse(serverUrl+"/apiv1/group/" + groupID + "/media/"+mediaID);
   var res = await http.get(url, headers: {'Authorization': 'Bearer ' + accessToken});
   if(res.statusCode != 200 && res.statusCode != 201) {
-    throw Exception(jsonDecode(res.body)['message']);
+    throw APIException(message: jsonDecode(res.body)['message'] ?? "No Error Message", statusCode: res.statusCode);
   }
 
-  return jsonDecode(res.body);
+  try {
+    return DBMedia.fromJson(jsonDecode(res.body));
+  } catch(e) {
+    //print(jsonDecode(res.body));
+    print(e);
+    //rethrow;
+    throw APIException(message: "Malformed response.  Could not Parse.", statusCode: res.statusCode);
+  }
 }
-
 
 

@@ -1,4 +1,5 @@
 import 'package:client/api/v1/AuthAPI.dart';
+import 'package:client/api/v1/types/DBMedia.dart';
 import 'package:client/controllers/GalleryState.dart';
 import 'package:client/pages/ErrorPage.dart';
 import 'package:client/pages/GalleryPage.dart';
@@ -61,7 +62,7 @@ class MyApp extends StatelessWidget {
             path: "media/:mediaID",
             builder: (context, state) {
               //Map<String, dynamic> = state.extra[;
-              return MediaPage(groupID: state.params['groupID'] ?? "", mediaID: state.params['mediaID'] ?? "", mediaDoc: (state.extra != null)?state.extra as Map<String, dynamic>:null,);
+              return MediaPage(groupID: state.params['groupID'] ?? "", mediaID: state.params['mediaID'] ?? "", mediaDoc: (state.extra != null)?state.extra as DBMedia:null,);
             }
           )
         ]

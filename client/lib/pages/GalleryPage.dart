@@ -59,13 +59,6 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
     super.dispose();
   }
 
-  void fillAllSpaceLoad() {
-    //print(controller.position.extentAfter);
-    while(controller.position.extentAfter == 0 && totalPages != page) {
-      getMedia();
-    }
-  }
-
   void getMedia() async {
     try {
 
@@ -109,7 +102,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
   Widget photoGrid(BuildContext context) {
     if(totalPages != page && !loadLock){
       WidgetsBinding.instance!.addPostFrameCallback((_){
-        if(controller.position.extentAfter == 0) {
+        if(controller.position.extentAfter < MediaQuery.of(context).size.height/3) {
           getMedia();
         }
         
