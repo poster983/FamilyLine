@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:convert';
+import 'Isar.dart';
 import 'controllers/AppState.dart';
 
 main() async {
@@ -36,6 +37,10 @@ main() async {
   await Hive.initFlutter();
   await Hive.openBox('settings');
   final authBox= await Hive.openBox('auth', encryptionCipher: HiveAesCipher(encryptionKey));
+
+  await setupIsar();
+
+
   //authBox.put("test", "peepee");
   runApp(MyApp());
 }

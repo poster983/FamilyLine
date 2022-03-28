@@ -41,6 +41,8 @@ class DBMedia {
 
     @Id()
     int? isarID;
+
+    @Index(type: IndexType.hash, unique: true)
     @JsonKey(name: "_id")
     String mongoID;
 

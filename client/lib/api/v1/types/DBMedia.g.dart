@@ -17,7 +17,7 @@ extension GetDBMediaCollection on Isar {
 final DBMediaSchema = CollectionSchema(
   name: 'DBMedia',
   schema:
-      '{"name":"DBMedia","idName":"isarID","properties":[{"name":"blurhash","type":"String"},{"name":"encoding","type":"String"},{"name":"files","type":"String"},{"name":"groupID","type":"String"},{"name":"lastModified","type":"Long"},{"name":"metadata","type":"String"},{"name":"mongoID","type":"String"},{"name":"sortDate","type":"Long"},{"name":"type","type":"String"},{"name":"uploaded","type":"Long"}],"indexes":[],"links":[]}',
+      '{"name":"DBMedia","idName":"isarID","properties":[{"name":"blurhash","type":"String"},{"name":"encoding","type":"String"},{"name":"files","type":"String"},{"name":"groupID","type":"String"},{"name":"lastModified","type":"Long"},{"name":"metadata","type":"String"},{"name":"mongoID","type":"String"},{"name":"sortDate","type":"Long"},{"name":"type","type":"String"},{"name":"uploaded","type":"Long"}],"indexes":[{"name":"mongoID","unique":true,"properties":[{"name":"mongoID","type":"Hash","caseSensitive":true}]}],"links":[]}',
   nativeAdapter: const _DBMediaNativeAdapter(),
   webAdapter: const _DBMediaWebAdapter(),
   idName: 'isarID',
@@ -34,8 +34,12 @@ final DBMediaSchema = CollectionSchema(
     'uploaded': 9
   },
   listProperties: {},
-  indexIds: {},
-  indexTypes: {},
+  indexIds: {'mongoID': 0},
+  indexTypes: {
+    'mongoID': [
+      NativeIndexType.stringHash,
+    ]
+  },
   linkIds: {},
   backlinkIds: {},
   linkedCollections: [],
@@ -284,9 +288,51 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
   void attachLinks(Isar isar, int id, DBMedia object) {}
 }
 
+extension DBMediaByIndex on IsarCollection<DBMedia> {
+  Future<DBMedia?> getByMongoID(String mongoID) {
+    return getByIndex('mongoID', [mongoID]);
+  }
+
+  DBMedia? getByMongoIDSync(String mongoID) {
+    return getByIndexSync('mongoID', [mongoID]);
+  }
+
+  Future<bool> deleteByMongoID(String mongoID) {
+    return deleteByIndex('mongoID', [mongoID]);
+  }
+
+  bool deleteByMongoIDSync(String mongoID) {
+    return deleteByIndexSync('mongoID', [mongoID]);
+  }
+
+  Future<List<DBMedia?>> getAllByMongoID(List<String> mongoIDValues) {
+    final values = mongoIDValues.map((e) => [e]).toList();
+    return getAllByIndex('mongoID', values);
+  }
+
+  List<DBMedia?> getAllByMongoIDSync(List<String> mongoIDValues) {
+    final values = mongoIDValues.map((e) => [e]).toList();
+    return getAllByIndexSync('mongoID', values);
+  }
+
+  Future<int> deleteAllByMongoID(List<String> mongoIDValues) {
+    final values = mongoIDValues.map((e) => [e]).toList();
+    return deleteAllByIndex('mongoID', values);
+  }
+
+  int deleteAllByMongoIDSync(List<String> mongoIDValues) {
+    final values = mongoIDValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync('mongoID', values);
+  }
+}
+
 extension DBMediaQueryWhereSort on QueryBuilder<DBMedia, DBMedia, QWhere> {
   QueryBuilder<DBMedia, DBMedia, QAfterWhere> anyIsarID() {
     return addWhereClauseInternal(const WhereClause(indexName: null));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterWhere> anyMongoID() {
+    return addWhereClauseInternal(const WhereClause(indexName: 'mongoID'));
   }
 }
 
@@ -361,6 +407,42 @@ extension DBMediaQueryWhere on QueryBuilder<DBMedia, DBMedia, QWhereClause> {
       upper: [upperIsarID],
       includeUpper: includeUpper,
     ));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterWhereClause> mongoIDEqualTo(
+      String mongoID) {
+    return addWhereClauseInternal(WhereClause(
+      indexName: 'mongoID',
+      lower: [mongoID],
+      includeLower: true,
+      upper: [mongoID],
+      includeUpper: true,
+    ));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterWhereClause> mongoIDNotEqualTo(
+      String mongoID) {
+    if (whereSortInternal == Sort.asc) {
+      return addWhereClauseInternal(WhereClause(
+        indexName: 'mongoID',
+        upper: [mongoID],
+        includeUpper: false,
+      )).addWhereClauseInternal(WhereClause(
+        indexName: 'mongoID',
+        lower: [mongoID],
+        includeLower: false,
+      ));
+    } else {
+      return addWhereClauseInternal(WhereClause(
+        indexName: 'mongoID',
+        lower: [mongoID],
+        includeLower: false,
+      )).addWhereClauseInternal(WhereClause(
+        indexName: 'mongoID',
+        upper: [mongoID],
+        includeUpper: false,
+      ));
+    }
   }
 }
 
