@@ -89,6 +89,9 @@ Future<APIPagination<DBMedia>> listMediaFromServer({required String groupID, int
     // print(DBMedia.fromJson(jsonDecode(res.body)['docs'][0]));
     //print(jsonDecode(res.body));
     APIPagination<DBMedia> response = APIPagination<DBMedia>.fromJson(jsonDecode(res.body), (data) => DBMedia.fromJson(data as Map<String, dynamic>));
+    
+    
+    
     return response;
   } catch(e) {
     //print(jsonDecode(res.body));
