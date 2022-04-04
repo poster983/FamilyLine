@@ -69,9 +69,11 @@ class MyApp extends StatelessWidget {
               //Map<String, dynamic> = state.extra[;
               return MediaPage(groupID: state.params['groupID'] ?? "", mediaID: state.params['mediaID'] ?? "", mediaDoc: (state.extra != null)?state.extra as DBMedia:null,);
             }
-          )
+          ),
         ]
       ),
+      
+
       // GoRoute(
       //   path: '/gallery',
       //   builder: (context, state) => 
@@ -186,8 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
       toolbar: [
         IconButton(onPressed: () {
           //CupertinoFullscreenModal.of(context)?.showModal(const Text("Hello"));
-          
-          CupertinoFullscreenModalState().showModal(const Text("Hello"));
+          showCupertinoModalBottomSheet(context: context, child: const Text("Hello"));
+          //CupertinoFullscreenModalState().showModal(const Text("Hello"));
         }, icon: const Icon(Icons.window))
       ],
       child: ElevatedButton(

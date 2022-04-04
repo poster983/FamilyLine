@@ -137,6 +137,8 @@ router.get("/:mediaID", verifyIDs, verifyAccessToken, checkGroup, async (req,res
  * @apiParam {String} mediaID - The id of the object.
  * @apiParam {String} groupID - The id of the group that this media belongs too.
  * @apiParam {String} versionID - Used with display.  The version of the file to use.
+ * @apiQuery {Boolean} [proxy=false] - If true, will return the file through a proxy.  slow and not recommended
+ * @apiQuery {Boolean} [noRedirect=false] - If true, returns a plaintext presigned s3 link instead of redirecting. For use on web clients where redirecting to an s3 link is not allowed.
  * @apiVersion 1.0.0
  */
 router.get(["/:version/:mediaID", "/:version/:mediaID/:versionID"], verifyIDs, verifyAccessToken, checkGroup, async (req,res,next) => { // should ensure the user has sufficient permissions to view the file
@@ -152,31 +154,56 @@ router.get(["/:version/:mediaID", "/:version/:mediaID/:versionID"], verifyIDs, v
   }
   const path = `groups/${req.params.groupID}/usermedia/${req.params.version}/${req.params.mediaID}${(req.params.versionID)?"/"+req.params.versionID:''}`
   //^((display)|(thumbnail)|(original))
-  try {
-    //let metaData = await storage.h(process.env.S3_BUCKET, req.params[0])
-    console.log("Fetching from bucket using: ", path)
-    let stream = await storage.getObject(process.env.S3_BUCKET,path)
-    stream.on('error', function error(err) {
-        //continue to the next middlewares
-        return next(err);
-    });
-    //stream
-    console.log(stream.headers)
-    res.set('Content-Type', stream.headers['content-type']);
-    res.set('Content-Length', stream.headers['content-length']);
-    res.set('Last-Modified', stream.headers['last-modified']);
-    res.set('ETag', stream.headers['etag']);
-    res.set('Cache-Control', 'private, max-age=604800')
-    stream.pipe(res)
-    //res.end()
-  } catch(e) {
-    console.error(e)
-    if(e?.code == 'NoSuchKey') {
-      const err = new Error("Media not found"); 
-      err.status = 404;
-      return next(err)
-    } else {
-      return next(e);
+
+  if(req.query.proxy) {
+    try {
+      //let metaData = await storage.h(process.env.S3_BUCKET, req.params[0])
+      console.log("Fetching from bucket using: ", path)
+      let stream = await storage.getObject(process.env.S3_BUCKET,path)
+      stream.on('error', function error(err) {
+          //continue to the next middlewares
+          return next(err);
+      });
+      //stream
+      console.log(stream.headers)
+      res.set('Content-Type', stream.headers['content-type']);
+      res.set('Content-Length', stream.headers['content-length']);
+      res.set('Last-Modified', stream.headers['last-modified']);
+      res.set('ETag', stream.headers['etag']);
+      res.set('Cache-Control', 'private, max-age=604800')
+      stream.pipe(res)
+      //res.end()
+    } catch(e) {
+      console.error(e)
+      if(e?.code == 'NoSuchKey') {
+        const err = new Error("Media not found"); 
+        err.status = 404;
+        return next(err)
+      } else {
+        return next(e);
+      }
+    }
+  } else {
+    try {
+      const ttl = parseInt(process.env.AUTH_REFRESH_TOKEN_TIMEOUT) //in seconds
+      const presignedLink = await storage.presignedGetUrl(process.env.S3_BUCKET,path, ttl)
+      
+      res.set('Cache-Control', 'private, max-age='+ttl);
+      if(req.query.noRedirect) {
+        res.set('Content-Type', 'text/plain');
+        res.send(presignedLink);
+      } else {
+        res.redirect(presignedLink);
+      }
+    } catch(e) {
+      console.error(e)
+      if(e?.code == 'NoSuchKey') {
+        const err = new Error("Media not found"); 
+        err.status = 404;
+        return next(err)
+      } else {
+        return next(e);
+      }
     }
   }
 });

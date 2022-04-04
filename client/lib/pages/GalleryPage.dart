@@ -36,13 +36,14 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
   bool loadLock = false;
   late ScrollController controller;
   List < DBMedia > items = [];
+  List < Widget > itemsW = [];
   bool loaded = false;
   String ? accessToken;
 
-  List < ObjectKey > thumbnailKeys = [];
+  List < UniqueKey > thumbnailKeys = [];
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => false;
 
   @override
   void initState() {
@@ -75,7 +76,11 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
       }, sort: {
         'sortDate': -1
       });
-      //thumbnailKeys.addAll(List < ObjectKey > .generate(data['docs'].length, (index) => ObjectKey(data['docs'][index])));
+      thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));
+      thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));
+      thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));
+      thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));
+      thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));
       
       accessToken = await refreshAndGetAccessToken();
       if(accessToken == null) {
@@ -85,6 +90,11 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
       //print(jsonDecode(data['docs']));
       setState(() {
         items.addAll(data.docs);
+        items.addAll(data.docs);
+        items.addAll(data.docs);
+        items.addAll(data.docs);
+        items.addAll(data.docs);
+        
         loaded = true;
       });
       page = data.page;
@@ -111,17 +121,18 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
     return Scrollbar(
       controller: controller,
       child: GridView.builder(
-      cacheExtent: MediaQuery.of(context).size.height*8,
+      cacheExtent: MediaQuery.of(context).size.height*4,
       controller: controller,
       physics: const BouncingScrollPhysics(),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: ((MediaQuery.of(context).size.width > 800) ? 500 * (pow(_remapZoom(galleryState.mainGridZoom.value, 0.1,1,0.23,1), 2) * 0.7) : 500 * (pow(_remapZoom(galleryState.mainGridZoom.value, 0.1,1,0.5,1), 4) * 1)),
+        maxCrossAxisExtent: ((MediaQuery.of(context).size.width > 800) ? 500 * (pow(_remapZoom(galleryState.mainGridZoom.value, 0.1,1,0.23,1), 2) * 0.7) : 500 * (pow(_remapZoom(galleryState.mainGridZoom.value, 0.1,1,0.6,1), 4) * 1)),
         childAspectRatio: 1,
         crossAxisSpacing: 0, //galleryState.mainGridZoom.value *5,
         mainAxisSpacing: 0, ),//galleryState.mainGridZoom.value *5),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        return MediaThumbnail(media: items[index], accessToken: accessToken ?? "");
+        //print("rebuildin Grid");
+        return MediaThumbnail(key:thumbnailKeys[index], media: items[index], accessToken: accessToken ?? "");
       }
       )
     );

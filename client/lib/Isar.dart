@@ -6,11 +6,11 @@ import 'package:path_provider/path_provider.dart';
 
 Isar? isar;
 Future<void> setupIsar() async {
-  final dir = await getApplicationSupportDirectory();
+
 
   isar = await Isar.open(
     schemas: [DBMediaSchema],
-    directory: dir.path,
+     //directory: (kIsWeb)? await getApplicationSupportDirectory(): null,
     inspector: kDebugMode,
   );
 }

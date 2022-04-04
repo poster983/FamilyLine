@@ -105,3 +105,66 @@ class CupertinoFullscreenModalState extends State<CupertinoFullscreenModal> {
     );
   }
 }
+
+
+
+// class CupertinoSlideupModal {
+//   CupertinoSlideupModal()
+// }
+
+
+void showCupertinoModalBottomSheet(
+  {
+  required BuildContext context,
+  required Widget child, 
+  Function(dynamic popValue)? onClose,
+}) {
+  const opened = true;
+  showModalBottomSheet(
+    isScrollControlled: true,
+    isDismissible: false,
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(25.0),
+        topRight: Radius.circular(25.0),
+      ),
+    ),
+    backgroundColor: Colors.transparent,
+    builder: (builder) {
+      return SizedBox(
+        key: const Key('CupertinoFullscreenModal'),
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25.0),
+            topRight: Radius.circular(25.0),
+          ),
+          child: Container(
+        color: Colors.black,
+        width: double.infinity,
+        height: double.infinity,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: EdgeInsets.symmetric(horizontal: opened ? 30 : 0, vertical: opened ? 50 : 0),
+          width:
+              opened ? MediaQuery.of(context).size.width * 0.8 : MediaQuery.of(context).size.width,
+          height: opened
+              ? MediaQuery.of(context).size.height * 0.8
+              : MediaQuery.of(context).size.height,
+          child: ClipRRect(
+            borderRadius: opened ? BorderRadius.circular(25) : BorderRadius.zero,
+            child: child,
+          ),
+        ),
+      ),
+
+        ),
+      );
+    },
+  ).then((value) {
+    if (onClose != null) {
+      onClose(value);
+    }
+  });
+}

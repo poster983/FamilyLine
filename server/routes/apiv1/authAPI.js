@@ -52,7 +52,7 @@ router.post("/login", async (req,res,next) => {
             console.error(e);
             return next(error("Could not create token", 500))
         }
-        res.status(201);
+        res.status(200);
         return res.json({refreshToken: token})
     } else {
         //invlaid
@@ -76,7 +76,7 @@ router.post("/exchange", async (req,res,next) => {
     }
     try {
         const tokens = await exchangeRefreshToken(req.body.refreshToken)
-        res.status(201);
+        res.status(200);
         return res.json(tokens)
     } catch(e) {
         return next(e);
