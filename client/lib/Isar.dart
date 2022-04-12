@@ -6,17 +6,25 @@ import 'package:path_provider/path_provider.dart';
 
 Isar? isar;
 Future<void> setupIsar() async {
-
+  String? dir;
+  if(!kIsWeb) {
+    var temp = await getApplicationSupportDirectory();
+    dir = temp.path;
+  }
 
   isar = await Isar.open(
     schemas: [DBMediaSchema],
-     //directory: (kIsWeb)? await getApplicationSupportDirectory(): null,
-    inspector: kDebugMode,
+    directory: dir,
+    inspector: kDebugMode && !kIsWeb,
   );
 }
 
 
 Isar getIsar() {
-return isar!;
-
+  try{
+    return isar!;
+  } catch(e) {
+    throw Exception("Isar not initialized");
+  }
+  
 }

@@ -114,3 +114,5 @@ localS3/
 apidoc/
 
 mongodb/
+
+encoder/mongoose

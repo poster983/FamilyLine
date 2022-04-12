@@ -149,7 +149,7 @@ class _PlatformImageState extends State < PlatformImage >  { //with AutomaticKee
   Widget cachedImage() {
     late Widget returner;
     
-    if(shouldRebuild) {
+    if(!shouldRebuild) {
       print("Unnessesary rebuild");
       
     }
@@ -157,7 +157,7 @@ class _PlatformImageState extends State < PlatformImage >  { //with AutomaticKee
     // WidgetsBinding.instance!.addPostFrameCallback((_){
     //     freeWebMemory();        
     //   });
-    print(webURL ?? widget.url);
+    //print(webURL ?? widget.url);
     try{ 
     returner = CachedNetworkImage(
           //key:imgKey,
