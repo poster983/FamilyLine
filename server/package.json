@@ -6,9 +6,10 @@
   "scripts": {
     "start": "node ./bin/www.js",
     "s3": "minio server ./localS3 --console-address \":9069\"",
-    "build:docs": "apidoc -i routes -o apidoc"
+    "build:docs": "apidoc -i routes -o apidoc",
+    "build": "echo Hi"
   },
-  "dependencies": {
+  "//dependencies": {
     "@smcloudstore/generic-s3": "^0.2.0",
     "bcrypt": "^5.0.1",
     "blurhash": "^1.1.5",
@@ -29,7 +30,7 @@
     "smcloudstore": "^0.2.1",
     "uuid": "^8.3.2"
   },
-  "devDependencies": {
+  "//devDependencies": {
     "apidoc": "^0.50.5"
   }
 }
