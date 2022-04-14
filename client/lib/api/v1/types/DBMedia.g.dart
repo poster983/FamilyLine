@@ -17,19 +17,19 @@ extension GetDBMediaCollection on Isar {
 final DBMediaSchema = CollectionSchema(
   name: 'DBMedia',
   schema:
-      '{"name":"DBMedia","idName":"isarID","properties":[{"name":"blurhash","type":"String"},{"name":"encoding","type":"String"},{"name":"files","type":"String"},{"name":"groupID","type":"String"},{"name":"lastModified","type":"Long"},{"name":"metadata","type":"String"},{"name":"mongoID","type":"String"},{"name":"sortDate","type":"Long"},{"name":"type","type":"String"},{"name":"uploaded","type":"Long"}],"indexes":[{"name":"mongoID","unique":true,"properties":[{"name":"mongoID","type":"Hash","caseSensitive":true}]}],"links":[]}',
+      '{"name":"DBMedia","idName":"isarID","properties":[{"name":"blurhash","type":"String"},{"name":"creationDate","type":"Long"},{"name":"encoding","type":"String"},{"name":"files","type":"String"},{"name":"groupID","type":"String"},{"name":"lastModified","type":"Long"},{"name":"metadata","type":"String"},{"name":"mongoID","type":"String"},{"name":"type","type":"String"},{"name":"uploaded","type":"Long"}],"indexes":[{"name":"mongoID","unique":true,"properties":[{"name":"mongoID","type":"Hash","caseSensitive":true}]}],"links":[]}',
   nativeAdapter: const _DBMediaNativeAdapter(),
   webAdapter: const _DBMediaWebAdapter(),
   idName: 'isarID',
   propertyIds: {
     'blurhash': 0,
-    'encoding': 1,
-    'files': 2,
-    'groupID': 3,
-    'lastModified': 4,
-    'metadata': 5,
-    'mongoID': 6,
-    'sortDate': 7,
+    'creationDate': 1,
+    'encoding': 2,
+    'files': 3,
+    'groupID': 4,
+    'lastModified': 5,
+    'metadata': 6,
+    'mongoID': 7,
     'type': 8,
     'uploaded': 9
   },
@@ -66,6 +66,8 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
   Object serialize(IsarCollection<DBMedia> collection, DBMedia object) {
     final jsObj = IsarNative.newJsObject();
     IsarNative.jsObjectSet(jsObj, 'blurhash', object.blurhash);
+    IsarNative.jsObjectSet(jsObj, 'creationDate',
+        object.creationDate.toUtc().millisecondsSinceEpoch);
     IsarNative.jsObjectSet(jsObj, 'encoding',
         _dBMedia_DBMediaEncodingConverter.toIsar(object.encoding));
     IsarNative.jsObjectSet(
@@ -77,8 +79,6 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
     IsarNative.jsObjectSet(jsObj, 'metadata',
         _dBMedia_DBMediaMetadataConverter.toIsar(object.metadata));
     IsarNative.jsObjectSet(jsObj, 'mongoID', object.mongoID);
-    IsarNative.jsObjectSet(
-        jsObj, 'sortDate', object.sortDate.toUtc().millisecondsSinceEpoch);
     IsarNative.jsObjectSet(jsObj, 'type', object.type);
     IsarNative.jsObjectSet(
         jsObj, 'uploaded', object.uploaded.toUtc().millisecondsSinceEpoch);
@@ -89,6 +89,14 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
   DBMedia deserialize(IsarCollection<DBMedia> collection, dynamic jsObj) {
     final object = DBMedia(
       blurhash: IsarNative.jsObjectGet(jsObj, 'blurhash'),
+      creationDate: IsarNative.jsObjectGet(jsObj, 'creationDate') != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+                  IsarNative.jsObjectGet(jsObj, 'creationDate'),
+                  isUtc: true)
+              .toLocal()
+          : DateTime.fromMillisecondsSinceEpoch(0),
+      encoding: _dBMedia_DBMediaEncodingConverter
+          .fromIsar(IsarNative.jsObjectGet(jsObj, 'encoding') ?? ''),
       files: _dBMedia_DBMediaFilesConverter
           .fromIsar(IsarNative.jsObjectGet(jsObj, 'files') ?? ''),
       groupID: IsarNative.jsObjectGet(jsObj, 'groupID') ?? '',
@@ -102,12 +110,6 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
       metadata: _dBMedia_DBMediaMetadataConverter
           .fromIsar(IsarNative.jsObjectGet(jsObj, 'metadata') ?? ''),
       mongoID: IsarNative.jsObjectGet(jsObj, 'mongoID') ?? '',
-      sortDate: IsarNative.jsObjectGet(jsObj, 'sortDate') != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-                  IsarNative.jsObjectGet(jsObj, 'sortDate'),
-                  isUtc: true)
-              .toLocal()
-          : DateTime.fromMillisecondsSinceEpoch(0),
       type: IsarNative.jsObjectGet(jsObj, 'type') ?? '',
       uploaded: IsarNative.jsObjectGet(jsObj, 'uploaded') != null
           ? DateTime.fromMillisecondsSinceEpoch(
@@ -116,8 +118,6 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
               .toLocal()
           : DateTime.fromMillisecondsSinceEpoch(0),
     );
-    object.encoding = _dBMedia_DBMediaEncodingConverter
-        .fromIsar(IsarNative.jsObjectGet(jsObj, 'encoding') ?? '');
     return object;
   }
 
@@ -126,6 +126,13 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
     switch (propertyName) {
       case 'blurhash':
         return (IsarNative.jsObjectGet(jsObj, 'blurhash')) as P;
+      case 'creationDate':
+        return (IsarNative.jsObjectGet(jsObj, 'creationDate') != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                    IsarNative.jsObjectGet(jsObj, 'creationDate'),
+                    isUtc: true)
+                .toLocal()
+            : DateTime.fromMillisecondsSinceEpoch(0)) as P;
       case 'encoding':
         return (_dBMedia_DBMediaEncodingConverter
             .fromIsar(IsarNative.jsObjectGet(jsObj, 'encoding') ?? '')) as P;
@@ -148,13 +155,6 @@ class _DBMediaWebAdapter extends IsarWebTypeAdapter<DBMedia> {
             .fromIsar(IsarNative.jsObjectGet(jsObj, 'metadata') ?? '')) as P;
       case 'mongoID':
         return (IsarNative.jsObjectGet(jsObj, 'mongoID') ?? '') as P;
-      case 'sortDate':
-        return (IsarNative.jsObjectGet(jsObj, 'sortDate') != null
-            ? DateTime.fromMillisecondsSinceEpoch(
-                    IsarNative.jsObjectGet(jsObj, 'sortDate'),
-                    isUtc: true)
-                .toLocal()
-            : DateTime.fromMillisecondsSinceEpoch(0)) as P;
       case 'type':
         return (IsarNative.jsObjectGet(jsObj, 'type') ?? '') as P;
       case 'uploaded':
@@ -186,25 +186,25 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
       _blurhash = IsarBinaryWriter.utf8Encoder.convert(value0);
     }
     dynamicSize += (_blurhash?.length ?? 0) as int;
-    final value1 = _dBMedia_DBMediaEncodingConverter.toIsar(object.encoding);
-    final _encoding = IsarBinaryWriter.utf8Encoder.convert(value1);
+    final value1 = object.creationDate;
+    final _creationDate = value1;
+    final value2 = _dBMedia_DBMediaEncodingConverter.toIsar(object.encoding);
+    final _encoding = IsarBinaryWriter.utf8Encoder.convert(value2);
     dynamicSize += (_encoding.length) as int;
-    final value2 = _dBMedia_DBMediaFilesConverter.toIsar(object.files);
-    final _files = IsarBinaryWriter.utf8Encoder.convert(value2);
+    final value3 = _dBMedia_DBMediaFilesConverter.toIsar(object.files);
+    final _files = IsarBinaryWriter.utf8Encoder.convert(value3);
     dynamicSize += (_files.length) as int;
-    final value3 = object.groupID;
-    final _groupID = IsarBinaryWriter.utf8Encoder.convert(value3);
+    final value4 = object.groupID;
+    final _groupID = IsarBinaryWriter.utf8Encoder.convert(value4);
     dynamicSize += (_groupID.length) as int;
-    final value4 = object.lastModified;
-    final _lastModified = value4;
-    final value5 = _dBMedia_DBMediaMetadataConverter.toIsar(object.metadata);
-    final _metadata = IsarBinaryWriter.utf8Encoder.convert(value5);
+    final value5 = object.lastModified;
+    final _lastModified = value5;
+    final value6 = _dBMedia_DBMediaMetadataConverter.toIsar(object.metadata);
+    final _metadata = IsarBinaryWriter.utf8Encoder.convert(value6);
     dynamicSize += (_metadata.length) as int;
-    final value6 = object.mongoID;
-    final _mongoID = IsarBinaryWriter.utf8Encoder.convert(value6);
+    final value7 = object.mongoID;
+    final _mongoID = IsarBinaryWriter.utf8Encoder.convert(value7);
     dynamicSize += (_mongoID.length) as int;
-    final value7 = object.sortDate;
-    final _sortDate = value7;
     final value8 = object.type;
     final _type = IsarBinaryWriter.utf8Encoder.convert(value8);
     dynamicSize += (_type.length) as int;
@@ -217,13 +217,13 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
     final buffer = IsarNative.bufAsBytes(rawObj.buffer, size);
     final writer = IsarBinaryWriter(buffer, staticSize);
     writer.writeBytes(offsets[0], _blurhash);
-    writer.writeBytes(offsets[1], _encoding);
-    writer.writeBytes(offsets[2], _files);
-    writer.writeBytes(offsets[3], _groupID);
-    writer.writeDateTime(offsets[4], _lastModified);
-    writer.writeBytes(offsets[5], _metadata);
-    writer.writeBytes(offsets[6], _mongoID);
-    writer.writeDateTime(offsets[7], _sortDate);
+    writer.writeDateTime(offsets[1], _creationDate);
+    writer.writeBytes(offsets[2], _encoding);
+    writer.writeBytes(offsets[3], _files);
+    writer.writeBytes(offsets[4], _groupID);
+    writer.writeDateTime(offsets[5], _lastModified);
+    writer.writeBytes(offsets[6], _metadata);
+    writer.writeBytes(offsets[7], _mongoID);
     writer.writeBytes(offsets[8], _type);
     writer.writeDateTime(offsets[9], _uploaded);
   }
@@ -233,20 +233,20 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
       IsarBinaryReader reader, List<int> offsets) {
     final object = DBMedia(
       blurhash: reader.readStringOrNull(offsets[0]),
-      files: _dBMedia_DBMediaFilesConverter
+      creationDate: reader.readDateTime(offsets[1]),
+      encoding: _dBMedia_DBMediaEncodingConverter
           .fromIsar(reader.readString(offsets[2])),
-      groupID: reader.readString(offsets[3]),
+      files: _dBMedia_DBMediaFilesConverter
+          .fromIsar(reader.readString(offsets[3])),
+      groupID: reader.readString(offsets[4]),
       isarID: id,
-      lastModified: reader.readDateTime(offsets[4]),
+      lastModified: reader.readDateTime(offsets[5]),
       metadata: _dBMedia_DBMediaMetadataConverter
-          .fromIsar(reader.readString(offsets[5])),
-      mongoID: reader.readString(offsets[6]),
-      sortDate: reader.readDateTime(offsets[7]),
+          .fromIsar(reader.readString(offsets[6])),
+      mongoID: reader.readString(offsets[7]),
       type: reader.readString(offsets[8]),
       uploaded: reader.readDateTime(offsets[9]),
     );
-    object.encoding = _dBMedia_DBMediaEncodingConverter
-        .fromIsar(reader.readString(offsets[1]));
     return object;
   }
 
@@ -259,22 +259,22 @@ class _DBMediaNativeAdapter extends IsarNativeTypeAdapter<DBMedia> {
       case 0:
         return (reader.readStringOrNull(offset)) as P;
       case 1:
+        return (reader.readDateTime(offset)) as P;
+      case 2:
         return (_dBMedia_DBMediaEncodingConverter
             .fromIsar(reader.readString(offset))) as P;
-      case 2:
+      case 3:
         return (_dBMedia_DBMediaFilesConverter
             .fromIsar(reader.readString(offset))) as P;
-      case 3:
-        return (reader.readString(offset)) as P;
       case 4:
-        return (reader.readDateTime(offset)) as P;
+        return (reader.readString(offset)) as P;
       case 5:
+        return (reader.readDateTime(offset)) as P;
+      case 6:
         return (_dBMedia_DBMediaMetadataConverter
             .fromIsar(reader.readString(offset))) as P;
-      case 6:
-        return (reader.readString(offset)) as P;
       case 7:
-        return (reader.readDateTime(offset)) as P;
+        return (reader.readString(offset)) as P;
       case 8:
         return (reader.readString(offset)) as P;
       case 9:
@@ -556,6 +556,54 @@ extension DBMediaQueryFilter
       property: 'blurhash',
       value: pattern,
       caseSensitive: caseSensitive,
+    ));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> creationDateEqualTo(
+      DateTime value) {
+    return addFilterConditionInternal(FilterCondition(
+      type: ConditionType.eq,
+      property: 'creationDate',
+      value: value,
+    ));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> creationDateGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return addFilterConditionInternal(FilterCondition(
+      type: ConditionType.gt,
+      include: include,
+      property: 'creationDate',
+      value: value,
+    ));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> creationDateLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return addFilterConditionInternal(FilterCondition(
+      type: ConditionType.lt,
+      include: include,
+      property: 'creationDate',
+      value: value,
+    ));
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> creationDateBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return addFilterConditionInternal(FilterCondition.between(
+      property: 'creationDate',
+      lower: lower,
+      includeLower: includeLower,
+      upper: upper,
+      includeUpper: includeUpper,
     ));
   }
 
@@ -1178,54 +1226,6 @@ extension DBMediaQueryFilter
     ));
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> sortDateEqualTo(
-      DateTime value) {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.eq,
-      property: 'sortDate',
-      value: value,
-    ));
-  }
-
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> sortDateGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.gt,
-      include: include,
-      property: 'sortDate',
-      value: value,
-    ));
-  }
-
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> sortDateLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return addFilterConditionInternal(FilterCondition(
-      type: ConditionType.lt,
-      include: include,
-      property: 'sortDate',
-      value: value,
-    ));
-  }
-
-  QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> sortDateBetween(
-    DateTime lower,
-    DateTime upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return addFilterConditionInternal(FilterCondition.between(
-      property: 'sortDate',
-      lower: lower,
-      includeLower: includeLower,
-      upper: upper,
-      includeUpper: includeUpper,
-    ));
-  }
-
   QueryBuilder<DBMedia, DBMedia, QAfterFilterCondition> typeEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1390,6 +1390,14 @@ extension DBMediaQueryWhereSortBy on QueryBuilder<DBMedia, DBMedia, QSortBy> {
     return addSortByInternal('blurhash', Sort.desc);
   }
 
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByCreationDate() {
+    return addSortByInternal('creationDate', Sort.asc);
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByCreationDateDesc() {
+    return addSortByInternal('creationDate', Sort.desc);
+  }
+
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByEncoding() {
     return addSortByInternal('encoding', Sort.asc);
   }
@@ -1446,14 +1454,6 @@ extension DBMediaQueryWhereSortBy on QueryBuilder<DBMedia, DBMedia, QSortBy> {
     return addSortByInternal('mongoID', Sort.desc);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortBySortDate() {
-    return addSortByInternal('sortDate', Sort.asc);
-  }
-
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortBySortDateDesc() {
-    return addSortByInternal('sortDate', Sort.desc);
-  }
-
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> sortByType() {
     return addSortByInternal('type', Sort.asc);
   }
@@ -1479,6 +1479,14 @@ extension DBMediaQueryWhereSortThenBy
 
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByBlurhashDesc() {
     return addSortByInternal('blurhash', Sort.desc);
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByCreationDate() {
+    return addSortByInternal('creationDate', Sort.asc);
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByCreationDateDesc() {
+    return addSortByInternal('creationDate', Sort.desc);
   }
 
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByEncoding() {
@@ -1537,14 +1545,6 @@ extension DBMediaQueryWhereSortThenBy
     return addSortByInternal('mongoID', Sort.desc);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenBySortDate() {
-    return addSortByInternal('sortDate', Sort.asc);
-  }
-
-  QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenBySortDateDesc() {
-    return addSortByInternal('sortDate', Sort.desc);
-  }
-
   QueryBuilder<DBMedia, DBMedia, QAfterSortBy> thenByType() {
     return addSortByInternal('type', Sort.asc);
   }
@@ -1567,6 +1567,10 @@ extension DBMediaQueryWhereDistinct
   QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByBlurhash(
       {bool caseSensitive = true}) {
     return addDistinctByInternal('blurhash', caseSensitive: caseSensitive);
+  }
+
+  QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByCreationDate() {
+    return addDistinctByInternal('creationDate');
   }
 
   QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByEncoding(
@@ -1602,10 +1606,6 @@ extension DBMediaQueryWhereDistinct
     return addDistinctByInternal('mongoID', caseSensitive: caseSensitive);
   }
 
-  QueryBuilder<DBMedia, DBMedia, QDistinct> distinctBySortDate() {
-    return addDistinctByInternal('sortDate');
-  }
-
   QueryBuilder<DBMedia, DBMedia, QDistinct> distinctByType(
       {bool caseSensitive = true}) {
     return addDistinctByInternal('type', caseSensitive: caseSensitive);
@@ -1620,6 +1620,10 @@ extension DBMediaQueryProperty
     on QueryBuilder<DBMedia, DBMedia, QQueryProperty> {
   QueryBuilder<DBMedia, String?, QQueryOperations> blurhashProperty() {
     return addPropertyNameInternal('blurhash');
+  }
+
+  QueryBuilder<DBMedia, DateTime, QQueryOperations> creationDateProperty() {
+    return addPropertyNameInternal('creationDate');
   }
 
   QueryBuilder<DBMedia, DBMediaEncoding?, QQueryOperations> encodingProperty() {
@@ -1650,10 +1654,6 @@ extension DBMediaQueryProperty
     return addPropertyNameInternal('mongoID');
   }
 
-  QueryBuilder<DBMedia, DateTime, QQueryOperations> sortDateProperty() {
-    return addPropertyNameInternal('sortDate');
-  }
-
   QueryBuilder<DBMedia, String, QQueryOperations> typeProperty() {
     return addPropertyNameInternal('type');
   }
@@ -1668,6 +1668,9 @@ extension DBMediaQueryProperty
 // **************************************************************************
 
 DBMedia _$DBMediaFromJson(Map<String, dynamic> json) => DBMedia(
+      encoding: json['encoding'] == null
+          ? null
+          : DBMediaEncoding.fromJson(json['encoding'] as Map<String, dynamic>),
       metadata:
           DBMediaMetadata.fromJson(json['metadata'] as Map<String, dynamic>),
       files: DBMediaFiles.fromJson(json['files'] as Map<String, dynamic>),
@@ -1677,11 +1680,9 @@ DBMedia _$DBMediaFromJson(Map<String, dynamic> json) => DBMedia(
       type: json['type'] as String,
       uploaded: DateTime.parse(json['uploaded'] as String),
       lastModified: DateTime.parse(json['lastModified'] as String),
-      sortDate: DateTime.parse(json['sortDate'] as String),
+      creationDate: DateTime.parse(json['creationDate'] as String),
       blurhash: json['blurhash'] as String?,
-    )..encoding = json['encoding'] == null
-        ? null
-        : DBMediaEncoding.fromJson(json['encoding'] as Map<String, dynamic>);
+    );
 
 Map<String, dynamic> _$DBMediaToJson(DBMedia instance) => <String, dynamic>{
       'isarID': instance.isarID,
@@ -1693,7 +1694,7 @@ Map<String, dynamic> _$DBMediaToJson(DBMedia instance) => <String, dynamic>{
       'type': instance.type,
       'uploaded': instance.uploaded.toIso8601String(),
       'lastModified': instance.lastModified.toIso8601String(),
-      'sortDate': instance.sortDate.toIso8601String(),
+      'creationDate': instance.creationDate.toIso8601String(),
       'blurhash': instance.blurhash,
     };
 

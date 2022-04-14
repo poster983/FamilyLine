@@ -74,7 +74,7 @@ class _GalleryPageState extends State < GalleryPage > with AutomaticKeepAliveCli
           '\$exists': true
         }
       }, sort: {
-        'sortDate': -1
+        'creationDate': -1
       });
       thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));
       thumbnailKeys.addAll(List < UniqueKey > .generate(data.docs.length, (index) => UniqueKey()));

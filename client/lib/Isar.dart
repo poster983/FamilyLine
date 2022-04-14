@@ -10,6 +10,9 @@ Future<void> setupIsar() async {
   if(!kIsWeb) {
     var temp = await getApplicationSupportDirectory();
     dir = temp.path;
+    if (kDebugMode) {
+      print("DB Location: " + dir);
+    }
   }
 
   isar = await Isar.open(

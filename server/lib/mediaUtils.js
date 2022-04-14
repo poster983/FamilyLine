@@ -4,15 +4,15 @@ import {
 import {
   promises as fsP
 } from 'fs';
-import imagemin from 'imagemin';
-import imageminWebp from 'imagemin-webp';
-import sharp from "sharp";
+//import sharp from "sharp";
 import storage from "../s3.js"
 import { error } from "./errorUtils.js";
 import DBMedia from './mongoose/DBMedia.js';
 import DBGroup from './mongoose/DBGroup.js';
 import {encoder} from './mongoose/DBQueues.js';
-import { encode } from "blurhash";
+//import { encode } from "blurhash";
+
+import {readMetadata} from "./metadata.js"
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -71,110 +71,111 @@ export function checkFileType(file) {
 }
 
 
-export const preprocess = {}
+// export const preprocess = {}
 
-/**
- * Preprocesses the uploaded image
- * @param {Object} fileinfo - From muller
- * @param {String} fileinfo.filename
- * @param {String} fileinfo.originalname
- * @param {String} fileinfo.path
- * @param {String} fileinfo.mimetype
- * @param {String} fileinfo.destination - the base path, no file name
- * @param {Object} [options] 
- * @param {String} [options.name] - Rename the file to this
- */
-preprocess.image = async (fileinfo, options) => {
-  if (!options) {
-    options = {};
-  }
+// /**
+//  * Preprocesses the uploaded image
+//  * @param {Object} fileinfo - From muller
+//  * @param {String} fileinfo.filename
+//  * @param {String} fileinfo.originalname
+//  * @param {String} fileinfo.path
+//  * @param {String} fileinfo.mimetype
+//  * @param {String} fileinfo.destination - the base path, no file name
+//  * @param {Object} [options] 
+//  * @param {String} [options.name] - Rename the file to this
+//  */
+// preprocess.image = async (fileinfo, options) => {
+//   if (!options) {
+//     options = {};
+//   }
 
-  const ogExt = extname(fileinfo.originalname);
+//   const ogExt = extname(fileinfo.originalname);
 
-  //if name != null then rename original   
-  if (!options?.name) options.name = fileinfo.filename
+//   //if name != null then rename original   
+//   if (!options?.name) options.name = fileinfo.filename
 
-  const newFileName = fileinfo.destination + "/" + options.name + ogExt
-  console.log(newFileName)
-  //rename original
-  await fsP.rename(fileinfo.path, newFileName)
-  //read in original file
-  let file;
-  try {
-    file = await fsP.readFile(newFileName);
-  } catch (e) {
-    console.error(e)
-    //delete original file 
-    try {
-      fsP.unlink(newFileName);
-    } catch (e) {
-      console.error(e)
-      return new Error("Could not delete uploaded file")
-    }
-    return e;
-  }
+//   const newFileName = fileinfo.destination + "/" + options.name + ogExt
+//   console.log(newFileName)
+//   //rename original
+//   await fsP.rename(fileinfo.path, newFileName)
+//   //read in original file
+//   let file;
+//   try {
+//     file = await fsP.readFile(newFileName);
+//   } catch (e) {
+//     console.error(e)
+//     //delete original file 
+//     try {
+//       fsP.unlink(newFileName);
+//     } catch (e) {
+//       console.error(e)
+//       return new Error("Could not delete uploaded file")
+//     }
+//     return e;
+//   }
 
-  //const destination = fileinfo.destination + "/" + options
-  //convert original to webp + rename
-  const converted = imagemin([newFileName], {
-    destination: fileinfo.destination + "/",
-    plugins: [
-      imageminWebp({
-        quality: 90,
-        metadata: 'all'
-        // resize: {
-        //   width: 256,
-        //   height: 256
-        // }
-      }),
-    ],
-  })
-  const thumbnail = imagemin([newFileName], {
-    destination: fileinfo.destination + "/thumbnail",
-    plugins: [
-      imageminWebp({
-        quality: 50,
-        resize: {
-          width: 256,
-          height: 0
-        }
-      }),
-    ],
-  })
-  const results = await Promise.all([converted, thumbnail])
+//   //const destination = fileinfo.destination + "/" + options
+//   //convert original to webp + rename
+//   const converted = imagemin([newFileName], {
+//     destination: fileinfo.destination + "/",
+//     plugins: [
+//       imageminWebp({
+//         quality: 90,
+//         metadata: 'all'
+//         // resize: {
+//         //   width: 256,
+//         //   height: 256
+//         // }
+//       }),
+//     ],
+//   })
+//   const thumbnail = imagemin([newFileName], {
+//     destination: fileinfo.destination + "/thumbnail",
+//     plugins: [
+//       imageminWebp({
+//         quality: 50,
+//         resize: {
+//           width: 256,
+//           height: 0
+//         }
+//       }),
+//     ],
+//   })
+//   const results = await Promise.all([converted, thumbnail])
 
-  return {
-    original: {path: newFileName, mime: fileinfo.mimetype},
-    compressed: results[0].destinationPath,
-    thumbnail: results[1].destinationPath
-  }
+//   return {
+//     original: {path: newFileName, mime: fileinfo.mimetype},
+//     compressed: results[0].destinationPath,
+//     thumbnail: results[1].destinationPath
+//   }
 
-  // let result = await webp.buffer2webpbuffer(file,ogExt.slice(1),"-q 100");
-  // console.log(result)
-
-
-  //convert webp to smaller webp thumbnail + rename
-
-}
+//   // let result = await webp.buffer2webpbuffer(file,ogExt.slice(1),"-q 100");
+//   // console.log(result)
 
 
-export function encodeImageToBlurhash (pathOrBuffer) {
-  return new Promise((resolve, reject) => {
-    try {
-      sharp(pathOrBuffer)
-      .raw()
-      .ensureAlpha()
-      .resize(32, 32, { fit: "inside" })
-      .toBuffer((err, buffer, prop) => {
-        if (err) return reject(err);
-        resolve(encode(new Uint8ClampedArray(buffer), prop.width, prop.height, 4, 4));
-      });
-    } catch(e) {
-      reject(e);
-    }
+//   //convert webp to smaller webp thumbnail + rename
+
+// }
+
+
+// export function encodeImageToBlurhash (pathOrBuffer) {
+//   return new Promise((resolve, reject) => {
+//     try {
+//       sharp(pathOrBuffer)
+//       .raw()
+//       .ensureAlpha()
+//       .resize(32, 32, { fit: "inside" })
+//       .toBuffer((err, buffer, prop) => {
+//         if (err) return reject(err);
+//         resolve(encode(new Uint8ClampedArray(buffer), prop.width, prop.height, 4, 4));
+//       });
+//     } catch(e) {
+//       reject(e);
+//     }
     
-  });
-}
+//   });
+// }
+
 
 
 
@@ -193,6 +194,18 @@ export function encodeImageToBlurhash (pathOrBuffer) {
  */
 export async function uploadObject(fileinfo, groupID) {
   //determine if object needs to be queued for processing (images, video, audio, docs)
+
+  //read metadata
+  let metadata;
+  try {
+    metadata = await readMetadata(fileinfo.path);
+  } catch(e) {
+    console.error(e)
+    throw e;
+  }
+
+  fileinfo.mimetype = metadata.parsed.original.mimetype;
+
   const filetype = checkFileType(fileinfo);
   if(!filetype) {
     throw error("Unsupported Media Type", 415);
@@ -222,6 +235,14 @@ export async function uploadObject(fileinfo, groupID) {
   
 
   //create record of object in DB.  (uuid, groupID, type[image,video,audio,doc], uploadDate, modifiedDate, processing{},  metadata{}, notes:Str, blurhash, paths: {original: })
+  let location = {};
+  if(metadata.parsed.metadata.gpsLongitude && metadata.parsed.metadata.gpsLatitude) { 
+    location = {
+      location: {
+        coordinates: [metadata.parsed.metadata.gpsLongitude, metadata.parsed.metadata.gpsLatitude],
+      }
+    }
+  }  
 
   let dbobj = new DBMedia({
     groupID: groupID,
@@ -230,7 +251,9 @@ export async function uploadObject(fileinfo, groupID) {
       progress: 0
     },
     metadata: {
-      filename: fileinfo.originalname
+      filename: fileinfo.originalname,
+      ...metadata.parsed.metadata,
+      ...location
     },
     //blurhash: blurhash,
   })

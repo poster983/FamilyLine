@@ -3,7 +3,9 @@ import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-
+process.env.TZ = "UTC";
+import { Settings } from "luxon";
+Settings.defaultZoneName = "UTC";
 // import dotenv from 'dotenv';
 // dotenv.config()
 import './env.js'

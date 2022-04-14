@@ -26,7 +26,7 @@ part 'DBMedia.g.dart';
 @JsonSerializable()
 class DBMedia {
     DBMedia({
-      //  this.encoding,
+      required this.encoding,
       required this.metadata,
       required this.files,
         this.isarID,
@@ -35,7 +35,7 @@ class DBMedia {
        required this.type,
        required this.uploaded,
        required this.lastModified,
-       required this.sortDate,
+       required this.creationDate,
         this.blurhash,
     });
 
@@ -52,7 +52,7 @@ class DBMedia {
     //   mongoID = val;
     // }
 
-    
+    //double? get encoding___progress => encoding?.progress;
 
      @_DBMediaEncodingConverter()
      DBMediaEncoding? encoding;
@@ -67,7 +67,7 @@ class DBMedia {
     String type;
     DateTime uploaded;
     DateTime lastModified;
-    DateTime sortDate;
+    DateTime creationDate;
     String? blurhash;
 
 

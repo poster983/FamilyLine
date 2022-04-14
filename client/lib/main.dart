@@ -13,6 +13,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:isar/isar.dart';
 import 'dart:convert';
 import 'Isar.dart';
 import 'controllers/AppState.dart';
@@ -47,6 +48,7 @@ main() async {
 
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
+
   final controller = Get.put(AppState());
   final galcontroller = Get.put(GalleryState());
   final _router = GoRouter(
@@ -169,11 +171,35 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  
 
+  
+  var isar = getIsar();
 
   @override
   Widget build(BuildContext context) {
+    print(isar.dBMedias);
+    var m = DBMedia(
+      encoding: DBMediaEncoding(progress: 0.5),
+      metadata: DBMediaMetadata(filename: "test.html", totalSize: 0), 
+      files: DBMediaFiles(),
+      mongoID: "mongoid", groupID: "gid", type: "PHOTO", uploaded: DateTime.now(), lastModified: DateTime.now(), creationDate: DateTime.now());
+      isar.writeTxn((isar) async {
+        var id = await isar.dBMedias.put(m);
+
+        DBMedia? mm = await isar.dBMedias.get(id);
+        print(mm);
+        //print(mm!.encoding___progress);
+
+        // var result = await isar.dBMedias.buildQuery(filter: FilterGroup.and([
+        //     FilterCondition(
+        //       type: ConditionType.eq,
+        //       property: 'encoding___progress',
+        //       value: 0.5,
+        //     ),
+        //         ])
+        // ).findAll();
+        // print(result);
+      });
     // if(getRefreshToken() == null) { // not logged in
     //   context.go("/login");
     //   return Container();
