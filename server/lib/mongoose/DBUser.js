@@ -35,7 +35,7 @@ import bcrypt from "bcrypt"
     password: {type: String, required: true, },
     joined: {type: Date, default: Date.now}
     //[{type: {type: String, required: true}, size: Number, mimetype: String}]
-})
+}, { timestamps: true });
 
 //Hashes the password before saving 
 DBUser.pre(

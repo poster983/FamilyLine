@@ -34,7 +34,7 @@ class DBMedia {
        required this.groupID,
        required this.type,
        required this.uploaded,
-       required this.lastModified,
+       required this.updatedAt,
        required this.creationDate,
         this.blurhash,
     });
@@ -66,7 +66,7 @@ class DBMedia {
     String groupID;
     String type;
     DateTime uploaded;
-    DateTime lastModified;
+    DateTime updatedAt;
     DateTime creationDate;
     String? blurhash;
 

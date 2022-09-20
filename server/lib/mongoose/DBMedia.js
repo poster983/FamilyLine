@@ -30,7 +30,7 @@ const DBPoint = new mongoose.Schema({
  * @property {ObjectId} groupID - The group that this media belongs to. 
  * @property {String} type - can be 'video', 'audio', 'image', document'
  * @property {Date} uploaded - Upload date
- * @property {Date} lastModified - Last modified date
+ * @property {Date} updatedAt - Last modified date
  * @property {Date} creationDate - Day to sort tis against the other photos in th UT (day photo was taken for instance)
  * @property {Object|null} encoding - can be null if the object does not need processing
  * @property {Number} encoding.progress - 0 to 1
@@ -76,8 +76,8 @@ const DBPoint = new mongoose.Schema({
     groupID: {type: mongoose.Schema.ObjectId, required: true, index: true},
     type: {type: String, required: true, enum: ['IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT']},
     // storageID: {type: String, required: true},
-    uploaded: {type: Date, default: Date.now},
-    lastModified: {type: Date, default: Date.now},
+    // uploaded: {type: Date, default: Date.now},
+    // updatedAt: {type: Date, default: Date.now},
     creationDate: {type: Date, default: Date.now, index: -1},
     encoding: {  
         progress: Number,
@@ -132,7 +132,7 @@ const DBPoint = new mongoose.Schema({
     }
 
     //[{type: {type: String, required: true}, size: Number, mimetype: String}]
-})
+}, { timestamps: { createdAt: 'uploaded' }})
 DBMedia.plugin(mongoosePaginate); // add pagenate features to media
 
 

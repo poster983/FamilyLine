@@ -43,11 +43,11 @@ class UploadMediaQueue {
     request.headers.addAll({'Authorization': 'Bearer ' + accessToken});
     //var fileLength = await fileStream.length;
     //print(fileLength);
-    //workarround for heic mimetype
-    String mimeType = lookupMimeType(file.name) ?? "";
-    if(file.extension == "heic") {
-      mimeType = "image/heic";
-    }
+    //workarround for heic mimetype (unneded as we can infer now)
+    // String mimeType = lookupMimeType(file.name) ?? "";
+    // if(file.extension == "heic") {
+    //   mimeType = "image/heic";
+    // }
     //print(lookupMimeType("/"+file.name));
     request.files.add(
       http.MultipartFile(
@@ -55,7 +55,7 @@ class UploadMediaQueue {
         file.readStream!,
         file.size,
         filename: file.name,
-        contentType: MediaType.parse(mimeType)
+        //contentType: MediaType.parse(mimeType)
       )
     );
 
