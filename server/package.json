@@ -17,7 +17,7 @@
     "debug": "~2.6.9",
     "dist-exiftool": "^10.53.0",
     "dotenv": "^16.0.0",
-    "express": "~4.16.1",
+    "express": "~4.17.3",
     "jsonwebtoken": "^8.5.1",
     "luxon": "^2.3.1",
     "mongodb-queue-up": "^5.0.1",
