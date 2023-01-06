@@ -19,7 +19,7 @@
     "dotenv": "^16.0.0",
     "express": "~4.16.1",
     "jsonwebtoken": "^8.5.1",
-    "luxon": "^2.3.1",
+    "luxon": "^2.5.2",
     "mongodb-queue-up": "^5.0.1",
     "mongoose": "^6.2.4",
     "mongoose-paginate-v2": "^1.6.3",
