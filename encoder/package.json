@@ -17,7 +17,7 @@
     "dotenv": "^16.0.0",
     "heic-convert": "^1.2.4",
     "mongodb-queue-up": "^5.0.1",
-    "mongoose": "^6.2.4",
+    "mongoose": "^8.0.0",
     "sharp": "^0.30.2",
     "smcloudstore": "^0.2.1",
     "uuid": "^8.3.2"
